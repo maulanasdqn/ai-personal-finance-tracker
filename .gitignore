@@ -3,3 +3,4 @@
 .env
 .dev.vars
 wrangler.toml.bak
+android-lib/target/
