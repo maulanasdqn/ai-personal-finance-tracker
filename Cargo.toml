@@ -24,3 +24,6 @@ zod-rs = { version = "1.0.1", default-features = false, features = ["macros"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
+
+[package.metadata]
+wasm-opt = false
