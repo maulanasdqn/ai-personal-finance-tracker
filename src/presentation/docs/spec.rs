@@ -3,7 +3,7 @@ pub const OPENAPI_SPEC: &str = r##"{
   "info": {
     "title": "AI Finance Tracker API",
     "description": "Upload a bank statement, let the AI file the transactions and tell you what to cut.",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "contact": {
       "name": "maulanasdqn",
       "url": "https://github.com/maulanasdqn/ai-personal-finance-tracker"
