@@ -1,17 +1,10 @@
+use super::dto::UploadInput;
 use crate::domain::bank_statement::entity::{BankStatement, FileType, NewBankStatement, ProcessingStatus};
 use crate::error::AppError;
 use crate::infrastructure::{ai, repository::bank_statement::D1BankStatementRepository, storage::r2};
 use worker::Bucket;
 use base64::{engine::general_purpose::STANDARD, Engine};
 use uuid::Uuid;
-
-pub struct UploadInput {
-    pub workspace_id: String,
-    pub file_name: String,
-    pub file_data: Vec<u8>,
-    pub content_type: String,
-    pub created_by: String,
-}
 
 pub async fn execute(input: UploadInput, repo: &D1BankStatementRepository, bucket: &Bucket, api_key: &str) -> Result<BankStatement, AppError> {
     let file_type = detect_file_type(&input.content_type);
@@ -49,6 +42,33 @@ pub async fn execute(input: UploadInput, repo: &D1BankStatementRepository, bucke
     }
 }
 
-fn detect_file_type(content_type: &str) -> FileType {
+pub(crate) fn detect_file_type(content_type: &str) -> FileType {
     if content_type.contains("pdf") { FileType::Pdf } else { FileType::Image }
+}
+
+#[cfg(test)]
+mod tests {
+    use wasm_bindgen_test::*;
+    wasm_bindgen_test_configure!(run_in_node);
+    use super::*;
+
+    #[wasm_bindgen_test]
+    fn detect_jpeg_is_image() {
+        assert_eq!(detect_file_type("image/jpeg"), FileType::Image);
+    }
+
+    #[wasm_bindgen_test]
+    fn detect_png_is_image() {
+        assert_eq!(detect_file_type("image/png"), FileType::Image);
+    }
+
+    #[wasm_bindgen_test]
+    fn detect_webp_is_image() {
+        assert_eq!(detect_file_type("image/webp"), FileType::Image);
+    }
+
+    #[wasm_bindgen_test]
+    fn detect_pdf_is_pdf() {
+        assert_eq!(detect_file_type("application/pdf"), FileType::Pdf);
+    }
 }

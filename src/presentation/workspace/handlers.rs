@@ -1,8 +1,8 @@
-use crate::application::workspace::use_cases::{create, invite};
+use crate::application::workspace::use_cases::{create, dto::{CreateWorkspaceInput, InviteMemberInput}, invite};
 use crate::domain::workspace::entity::WorkspacePatch;
 use crate::error::AppError;
 use crate::infrastructure::repository::{user::D1UserRepository, workspace::D1WorkspaceRepository};
-use crate::presentation::{middleware::authenticate, workspace::dto::*};
+use crate::presentation::{guard, middleware::authenticate, workspace::dto::*};
 use worker::{Request, Response, RouteContext};
 
 macro_rules! auth {
@@ -35,11 +35,14 @@ pub async fn create_handler(req: Request, ctx: RouteContext<()>) -> worker::Resu
 }
 
 async fn handle_create(mut req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {
+    guard::require_json(&req)?;
+    guard::limit_body(&req)?;
     let user = auth!(req, ctx);
-    let body: CreateWorkspaceRequest = req.json().await.map_err(|_| AppError::BadRequest("invalid JSON".into()))?;
-    if body.name.is_empty() { return Err(AppError::BadRequest("name is required".into())); }
+    let raw: serde_json::Value = req.json().await.map_err(|_| AppError::BadRequest("invalid JSON".into()))?;
+    let body = CreateWorkspaceRequest::validate_and_parse(&raw)
+        .map_err(|e| AppError::BadRequest(e.to_string()))?;
     let repo = workspace_repo!(ctx);
-    let workspace = create::execute(create::CreateWorkspaceInput { name: body.name, description: body.description, owner_id: user.user_id }, &repo).await?;
+    let workspace = create::execute(CreateWorkspaceInput { name: body.name, description: body.description, owner_id: user.user_id }, &repo).await?;
     Response::from_json(&WorkspaceResponse::from(workspace)).map_err(AppError::from)
 }
 
@@ -61,9 +64,16 @@ pub async fn update_handler(req: Request, ctx: RouteContext<()>) -> worker::Resu
 }
 
 async fn handle_update(mut req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {
+    guard::require_json(&req)?;
+    guard::limit_body(&req)?;
     let user = auth!(req, ctx);
     let id = ctx.param("id").ok_or_else(|| AppError::BadRequest("missing id".into()))?;
     let body: UpdateWorkspaceRequest = req.json().await.map_err(|_| AppError::BadRequest("invalid JSON".into()))?;
+    if let Some(ref name) = body.name {
+        if name.is_empty() || name.len() > 80 {
+            return Err(AppError::BadRequest("workspace name must be between 1 and 80 characters".into()));
+        }
+    }
     let repo = workspace_repo!(ctx);
     let member = repo.find_member(id, &user.user_id).await?.ok_or_else(|| AppError::Forbidden("not a member".into()))?;
     if member.role == crate::domain::workspace::entity::MemberRole::Member {
@@ -93,12 +103,16 @@ pub async fn invite_handler(req: Request, ctx: RouteContext<()>) -> worker::Resu
 }
 
 async fn handle_invite(mut req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {
+    guard::require_json(&req)?;
+    guard::limit_body(&req)?;
     let user = auth!(req, ctx);
     let workspace_id = ctx.param("id").ok_or_else(|| AppError::BadRequest("missing id".into()))?;
-    let body: InviteMemberRequest = req.json().await.map_err(|_| AppError::BadRequest("invalid JSON".into()))?;
+    let raw: serde_json::Value = req.json().await.map_err(|_| AppError::BadRequest("invalid JSON".into()))?;
+    let body = InviteMemberRequest::validate_and_parse(&raw)
+        .map_err(|e| AppError::BadRequest(e.to_string()))?;
     let workspace_repo = D1WorkspaceRepository::new(ctx.env.d1("DB").map_err(AppError::from)?);
     let user_repo = D1UserRepository::new(ctx.env.d1("DB").map_err(AppError::from)?);
-    let member = invite::execute(invite::InviteMemberInput { workspace_id: workspace_id.to_string(), inviter_id: user.user_id, email: body.email }, &workspace_repo, &user_repo).await?;
+    let member = invite::execute(InviteMemberInput { workspace_id: workspace_id.to_string(), inviter_id: user.user_id, email: body.email }, &workspace_repo, &user_repo).await?;
     Response::from_json(&MemberResponse::from(member)).map_err(AppError::from)
 }
 

@@ -14,7 +14,7 @@ pub fn generate_token(user_id: &str, email: &str, secret: &str) -> Result<String
         AuthClaims { user_id: user_id.to_string(), email: email.to_string() },
         Duration::from_hours(24),
     );
-    key.authenticate(claims).map_err(|e| AppError::Internal(e.to_string()))
+    key.authenticate(claims).map_err(|_| AppError::Internal)
 }
 
 pub fn verify_token(token: &str, secret: &str) -> Result<AuthClaims, AppError> {

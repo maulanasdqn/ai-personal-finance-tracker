@@ -1,8 +1,8 @@
-use crate::application::transaction::use_cases::create as create_uc;
+use crate::application::transaction::use_cases::{create as create_uc, dto::CreateTransactionInput};
 use crate::domain::transaction::repository::TransactionFilter;
 use crate::error::AppError;
 use crate::infrastructure::repository::{transaction::D1TransactionRepository, workspace::D1WorkspaceRepository};
-use crate::presentation::{middleware::authenticate, transaction::dto::*};
+use crate::presentation::{guard, middleware::authenticate, transaction::dto::*};
 use worker::{Request, Response, RouteContext};
 
 macro_rules! auth_member {
@@ -22,7 +22,7 @@ pub async fn list_handler(req: Request, ctx: RouteContext<()>) -> worker::Result
 
 async fn handle_list(req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {
     let wid = ctx.param("workspace_id").ok_or_else(|| AppError::BadRequest("missing workspace_id".into()))?;
-    let user = auth_member!(req, ctx, wid);
+    let _user = auth_member!(req, ctx, wid);
     let url = req.url().map_err(AppError::from)?;
     let params: std::collections::HashMap<_, _> = url.query_pairs().into_owned().collect();
     let db = ctx.env.d1("DB").map_err(AppError::from)?;
@@ -45,13 +45,16 @@ pub async fn create_handler(req: Request, ctx: RouteContext<()>) -> worker::Resu
 }
 
 async fn handle_create(mut req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {
+    guard::require_json(&req)?;
+    guard::limit_body(&req)?;
     let wid = ctx.param("workspace_id").ok_or_else(|| AppError::BadRequest("missing workspace_id".into()))?.to_string();
     let user = auth_member!(req, ctx, &wid);
-    let body: CreateTransactionRequest = req.json().await.map_err(|_| AppError::BadRequest("invalid JSON".into()))?;
-    if body.amount <= 0.0 { return Err(AppError::BadRequest("amount must be positive".into())); }
+    let raw: serde_json::Value = req.json().await.map_err(|_| AppError::BadRequest("invalid JSON".into()))?;
+    let body = CreateTransactionRequest::validate_and_parse(&raw)
+        .map_err(|e| AppError::BadRequest(e.to_string()))?;
     let db = ctx.env.d1("DB").map_err(AppError::from)?;
     let repo = D1TransactionRepository::new(db);
-    let tx = create_uc::execute(create_uc::CreateTransactionInput {
+    let tx = create_uc::execute(CreateTransactionInput {
         workspace_id: wid, amount: body.amount, currency: body.currency,
         category: body.category, description: body.description,
         transaction_date: body.transaction_date, transaction_type: body.transaction_type,

@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
+use zod_rs::prelude::*;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ZodSchema)]
 pub struct CreateWorkspaceRequest {
+    #[zod(min_length(1), max_length(80))]
     pub name: String,
     pub description: Option<String>,
 }
@@ -12,8 +14,9 @@ pub struct UpdateWorkspaceRequest {
     pub description: Option<Option<String>>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ZodSchema)]
 pub struct InviteMemberRequest {
+    #[zod(email)]
     pub email: String,
 }
 
@@ -44,5 +47,42 @@ impl From<crate::domain::workspace::entity::Workspace> for WorkspaceResponse {
 impl From<crate::domain::workspace::entity::WorkspaceMember> for MemberResponse {
     fn from(m: crate::domain::workspace::entity::WorkspaceMember) -> Self {
         Self { workspace_id: m.workspace_id, user_id: m.user_id, role: m.role.to_string(), joined_at: m.joined_at }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use wasm_bindgen_test::*;
+    wasm_bindgen_test_configure!(run_in_node);
+    use super::*;
+
+    #[wasm_bindgen_test]
+    fn create_workspace_valid() {
+        let v = serde_json::json!({"name": "My Workspace"});
+        assert!(CreateWorkspaceRequest::validate_and_parse(&v).is_ok());
+    }
+
+    #[wasm_bindgen_test]
+    fn create_workspace_empty_name() {
+        let v = serde_json::json!({"name": ""});
+        assert!(CreateWorkspaceRequest::validate_and_parse(&v).is_err());
+    }
+
+    #[wasm_bindgen_test]
+    fn create_workspace_name_over_80_chars() {
+        let v = serde_json::json!({"name": "a".repeat(81)});
+        assert!(CreateWorkspaceRequest::validate_and_parse(&v).is_err());
+    }
+
+    #[wasm_bindgen_test]
+    fn invite_member_valid_email() {
+        let v = serde_json::json!({"email": "member@example.com"});
+        assert!(InviteMemberRequest::validate_and_parse(&v).is_ok());
+    }
+
+    #[wasm_bindgen_test]
+    fn invite_member_invalid_email() {
+        let v = serde_json::json!({"email": "not-valid"});
+        assert!(InviteMemberRequest::validate_and_parse(&v).is_err());
     }
 }

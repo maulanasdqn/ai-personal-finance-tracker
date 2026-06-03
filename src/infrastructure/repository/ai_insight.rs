@@ -5,6 +5,11 @@ use std::str::FromStr;
 use worker::D1Database;
 
 #[derive(Deserialize)]
+struct CountRow {
+    count: i64,
+}
+
+#[derive(Deserialize)]
 struct AiInsightRow {
     id: String,
     workspace_id: String,
@@ -41,33 +46,38 @@ impl D1AiInsightRepository {
         self.db
             .prepare("INSERT INTO ai_insights (id, workspace_id, insight_type, title, content, metadata, created_at) VALUES (?1,?2,?3,?4,?5,?6,?7)")
             .bind(&[insight.id.clone().into(), insight.workspace_id.into(), insight.insight_type.to_string().into(), insight.title.into(), insight.content.into(), metadata_str.into(), insight.created_at.into()])
-            .map_err(|e| AppError::Internal(e.to_string()))?
-            .run().await.map_err(|e| AppError::Internal(e.to_string()))?;
-        self.find_by_id(&insight.id).await?.ok_or_else(|| AppError::Internal("insert failed".into()))
+            .map_err(|_| AppError::Internal)?
+            .run().await.map_err(|_| AppError::Internal)?;
+        self.find_by_id(&insight.id).await?.ok_or_else(|| AppError::Internal)
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<AiInsight>, AppError> {
         self.db.prepare("SELECT * FROM ai_insights WHERE id = ?1")
-            .bind(&[id.into()]).map_err(|e| AppError::Internal(e.to_string()))?
+            .bind(&[id.into()]).map_err(|_| AppError::Internal)?
             .first::<AiInsightRow>(None).await
-            .map_err(|e| AppError::Internal(e.to_string())).map(|r| r.map(Into::into))
+            .map_err(|_| AppError::Internal).map(|r| r.map(Into::into))
+    }
+
+    pub async fn was_recently_generated(&self, workspace_id: &str, cooldown_secs: i64) -> Result<bool, AppError> {
+        let cutoff = (chrono::Utc::now() - chrono::Duration::seconds(cooldown_secs)).to_rfc3339();
+        let row = self.db
+            .prepare("SELECT COUNT(*) as count FROM ai_insights WHERE workspace_id = ?1 AND created_at >= ?2")
+            .bind(&[workspace_id.into(), cutoff.into()])
+            .map_err(|_| AppError::Internal)?
+            .first::<CountRow>(None).await
+            .map_err(|_| AppError::Internal)?;
+        Ok(row.map(|r| r.count > 0).unwrap_or(false))
     }
 
     pub async fn list_by_workspace(&self, workspace_id: &str, insight_type: Option<&str>) -> Result<Vec<AiInsight>, AppError> {
         let results = self.db
             .prepare("SELECT * FROM ai_insights WHERE workspace_id = ?1 AND (?2 IS NULL OR insight_type = ?2) ORDER BY created_at DESC")
             .bind(&[workspace_id.into(), insight_type.map(String::from).into()])
-            .map_err(|e| AppError::Internal(e.to_string()))?
-            .all().await.map_err(|e| AppError::Internal(e.to_string()))?;
+            .map_err(|_| AppError::Internal)?
+            .all().await.map_err(|_| AppError::Internal)?;
         results.results::<AiInsightRow>()
-            .map_err(|e| AppError::Internal(e.to_string()))
+            .map_err(|_| AppError::Internal)
             .map(|rows| rows.into_iter().map(Into::into).collect())
     }
 
-    pub async fn delete(&self, id: &str) -> Result<(), AppError> {
-        self.db.prepare("DELETE FROM ai_insights WHERE id = ?1")
-            .bind(&[id.into()]).map_err(|e| AppError::Internal(e.to_string()))?
-            .run().await.map_err(|e| AppError::Internal(e.to_string()))?;
-        Ok(())
-    }
 }

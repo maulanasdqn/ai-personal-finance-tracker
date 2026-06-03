@@ -61,24 +61,24 @@ impl D1BankStatementRepository {
         self.db
             .prepare("INSERT INTO bank_statements (id, workspace_id, file_key, file_name, file_type, status, created_by, created_at, updated_at) VALUES (?1,?2,?3,?4,?5,'pending',?6,?7,?8)")
             .bind(&[s.id.clone().into(), s.workspace_id.into(), s.file_key.into(), s.file_name.into(), s.file_type.to_string().into(), s.created_by.into(), s.created_at.into(), s.updated_at.into()])
-            .map_err(|e| AppError::Internal(e.to_string()))?
-            .run().await.map_err(|e| AppError::Internal(e.to_string()))?;
-        self.find_by_id(&s.id).await?.ok_or_else(|| AppError::Internal("insert failed".into()))
+            .map_err(|_| AppError::Internal)?
+            .run().await.map_err(|_| AppError::Internal)?;
+        self.find_by_id(&s.id).await?.ok_or_else(|| AppError::Internal)
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<BankStatement>, AppError> {
         self.db.prepare("SELECT * FROM bank_statements WHERE id = ?1")
-            .bind(&[id.into()]).map_err(|e| AppError::Internal(e.to_string()))?
+            .bind(&[id.into()]).map_err(|_| AppError::Internal)?
             .first::<BankStatementRow>(None).await
-            .map_err(|e| AppError::Internal(e.to_string())).map(|r| r.map(Into::into))
+            .map_err(|_| AppError::Internal).map(|r| r.map(Into::into))
     }
 
     pub async fn list_by_workspace(&self, workspace_id: &str) -> Result<Vec<BankStatement>, AppError> {
         let results = self.db.prepare("SELECT * FROM bank_statements WHERE workspace_id = ?1 ORDER BY created_at DESC")
-            .bind(&[workspace_id.into()]).map_err(|e| AppError::Internal(e.to_string()))?
-            .all().await.map_err(|e| AppError::Internal(e.to_string()))?;
+            .bind(&[workspace_id.into()]).map_err(|_| AppError::Internal)?
+            .all().await.map_err(|_| AppError::Internal)?;
         results.results::<BankStatementRow>()
-            .map_err(|e| AppError::Internal(e.to_string()))
+            .map_err(|_| AppError::Internal)
             .map(|rows| rows.into_iter().map(Into::into).collect())
     }
 
@@ -86,15 +86,9 @@ impl D1BankStatementRepository {
         let parsed_str = parsed.map(|v| v.to_string());
         self.db.prepare("UPDATE bank_statements SET status = ?1, parsed_transactions = ?2, ai_summary = ?3, updated_at = ?4 WHERE id = ?5")
             .bind(&[status.to_string().into(), parsed_str.into(), summary.into(), now.into(), id.into()])
-            .map_err(|e| AppError::Internal(e.to_string()))?
-            .run().await.map_err(|e| AppError::Internal(e.to_string()))?;
+            .map_err(|_| AppError::Internal)?
+            .run().await.map_err(|_| AppError::Internal)?;
         self.find_by_id(id).await?.ok_or_else(|| AppError::NotFound("statement not found".into()))
     }
 
-    pub async fn delete(&self, id: &str) -> Result<(), AppError> {
-        self.db.prepare("DELETE FROM bank_statements WHERE id = ?1")
-            .bind(&[id.into()]).map_err(|e| AppError::Internal(e.to_string()))?
-            .run().await.map_err(|e| AppError::Internal(e.to_string()))?;
-        Ok(())
-    }
 }

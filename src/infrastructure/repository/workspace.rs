@@ -50,25 +50,25 @@ impl D1WorkspaceRepository {
         self.db
             .prepare("INSERT INTO workspaces (id, name, description, owner_id, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")
             .bind(&[w.id.clone().into(), w.name.into(), w.description.into(), w.owner_id.into(), w.created_at.into(), w.updated_at.into()])
-            .map_err(|e| AppError::Internal(e.to_string()))?
-            .run().await.map_err(|e| AppError::Internal(e.to_string()))?;
-        self.find_by_id(&w.id).await?.ok_or_else(|| AppError::Internal("insert failed".into()))
+            .map_err(|_| AppError::Internal)?
+            .run().await.map_err(|_| AppError::Internal)?;
+        self.find_by_id(&w.id).await?.ok_or_else(|| AppError::Internal)
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<Workspace>, AppError> {
         self.db.prepare("SELECT * FROM workspaces WHERE id = ?1")
-            .bind(&[id.into()]).map_err(|e| AppError::Internal(e.to_string()))?
+            .bind(&[id.into()]).map_err(|_| AppError::Internal)?
             .first::<WorkspaceRow>(None).await
-            .map_err(|e| AppError::Internal(e.to_string())).map(|r| r.map(Into::into))
+            .map_err(|_| AppError::Internal).map(|r| r.map(Into::into))
     }
 
     pub async fn list_by_user(&self, user_id: &str) -> Result<Vec<Workspace>, AppError> {
         let results = self.db
             .prepare("SELECT w.* FROM workspaces w JOIN workspace_members wm ON w.id = wm.workspace_id WHERE wm.user_id = ?1 ORDER BY w.created_at DESC")
-            .bind(&[user_id.into()]).map_err(|e| AppError::Internal(e.to_string()))?
-            .all().await.map_err(|e| AppError::Internal(e.to_string()))?;
+            .bind(&[user_id.into()]).map_err(|_| AppError::Internal)?
+            .all().await.map_err(|_| AppError::Internal)?;
         results.results::<WorkspaceRow>()
-            .map_err(|e| AppError::Internal(e.to_string()))
+            .map_err(|_| AppError::Internal)
             .map(|rows| rows.into_iter().map(Into::into).collect())
     }
 
@@ -76,16 +76,26 @@ impl D1WorkspaceRepository {
         if let Some(name) = patch.name {
             self.db.prepare("UPDATE workspaces SET name = ?1, updated_at = ?2 WHERE id = ?3")
                 .bind(&[name.into(), now.into(), id.into()])
-                .map_err(|e| AppError::Internal(e.to_string()))?
-                .run().await.map_err(|e| AppError::Internal(e.to_string()))?;
+                .map_err(|_| AppError::Internal)?
+                .run().await.map_err(|_| AppError::Internal)?;
+        }
+        if let Some(desc) = patch.description {
+            let desc_val: worker::wasm_bindgen::JsValue = match desc {
+                Some(s) => s.into(),
+                None => worker::wasm_bindgen::JsValue::NULL,
+            };
+            self.db.prepare("UPDATE workspaces SET description = ?1, updated_at = ?2 WHERE id = ?3")
+                .bind(&[desc_val, now.into(), id.into()])
+                .map_err(|_| AppError::Internal)?
+                .run().await.map_err(|_| AppError::Internal)?;
         }
         self.find_by_id(id).await?.ok_or_else(|| AppError::NotFound("workspace not found".into()))
     }
 
     pub async fn delete(&self, id: &str) -> Result<(), AppError> {
         self.db.prepare("DELETE FROM workspaces WHERE id = ?1")
-            .bind(&[id.into()]).map_err(|e| AppError::Internal(e.to_string()))?
-            .run().await.map_err(|e| AppError::Internal(e.to_string()))?;
+            .bind(&[id.into()]).map_err(|_| AppError::Internal)?
+            .run().await.map_err(|_| AppError::Internal)?;
         Ok(())
     }
 
@@ -93,33 +103,25 @@ impl D1WorkspaceRepository {
         self.db
             .prepare("INSERT OR IGNORE INTO workspace_members (workspace_id, user_id, role, joined_at) VALUES (?1, ?2, ?3, ?4)")
             .bind(&[workspace_id.into(), user_id.into(), role.to_string().into(), now.into()])
-            .map_err(|e| AppError::Internal(e.to_string()))?
-            .run().await.map_err(|e| AppError::Conflict(e.to_string()))?;
-        self.find_member(workspace_id, user_id).await?.ok_or_else(|| AppError::Internal("insert failed".into()))
-    }
-
-    pub async fn remove_member(&self, workspace_id: &str, user_id: &str) -> Result<(), AppError> {
-        self.db.prepare("DELETE FROM workspace_members WHERE workspace_id = ?1 AND user_id = ?2")
-            .bind(&[workspace_id.into(), user_id.into()])
-            .map_err(|e| AppError::Internal(e.to_string()))?
-            .run().await.map_err(|e| AppError::Internal(e.to_string()))?;
-        Ok(())
+            .map_err(|_| AppError::Internal)?
+            .run().await.map_err(|_| AppError::Conflict("user is already a member of this workspace".into()))?;
+        self.find_member(workspace_id, user_id).await?.ok_or_else(|| AppError::Internal)
     }
 
     pub async fn find_member(&self, workspace_id: &str, user_id: &str) -> Result<Option<WorkspaceMember>, AppError> {
         self.db.prepare("SELECT * FROM workspace_members WHERE workspace_id = ?1 AND user_id = ?2")
             .bind(&[workspace_id.into(), user_id.into()])
-            .map_err(|e| AppError::Internal(e.to_string()))?
+            .map_err(|_| AppError::Internal)?
             .first::<MemberRow>(None).await
-            .map_err(|e| AppError::Internal(e.to_string())).map(|r| r.map(Into::into))
+            .map_err(|_| AppError::Internal).map(|r| r.map(Into::into))
     }
 
     pub async fn list_members(&self, workspace_id: &str) -> Result<Vec<WorkspaceMember>, AppError> {
         let results = self.db.prepare("SELECT * FROM workspace_members WHERE workspace_id = ?1")
-            .bind(&[workspace_id.into()]).map_err(|e| AppError::Internal(e.to_string()))?
-            .all().await.map_err(|e| AppError::Internal(e.to_string()))?;
+            .bind(&[workspace_id.into()]).map_err(|_| AppError::Internal)?
+            .all().await.map_err(|_| AppError::Internal)?;
         results.results::<MemberRow>()
-            .map_err(|e| AppError::Internal(e.to_string()))
+            .map_err(|_| AppError::Internal)
             .map(|rows| rows.into_iter().map(Into::into).collect())
     }
 }

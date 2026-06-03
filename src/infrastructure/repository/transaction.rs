@@ -1,5 +1,5 @@
-use crate::domain::transaction::entity::{NewTransaction, Transaction, TransactionPatch, TransactionSource, TransactionType};
-use crate::domain::transaction::repository::{CategorySummary, TransactionFilter};
+use crate::domain::transaction::entity::{NewTransaction, Transaction, TransactionSource, TransactionType};
+use crate::domain::transaction::repository::TransactionFilter;
 use crate::error::AppError;
 use serde::Deserialize;
 use std::str::FromStr;
@@ -40,14 +40,6 @@ impl From<TransactionRow> for Transaction {
     }
 }
 
-#[derive(Deserialize)]
-struct CategoryRow {
-    category: String,
-    total: f64,
-    count: i64,
-    transaction_type: String,
-}
-
 pub struct D1TransactionRepository {
     db: D1Database,
 }
@@ -64,16 +56,16 @@ impl D1TransactionRepository {
                 tx.transaction_type.to_string().into(), tx.source.to_string().into(),
                 tx.created_by.into(), tx.created_at.into(), tx.updated_at.into(),
             ])
-            .map_err(|e| AppError::Internal(e.to_string()))?
-            .run().await.map_err(|e| AppError::Internal(e.to_string()))?;
-        self.find_by_id(&tx.id).await?.ok_or_else(|| AppError::Internal("insert failed".into()))
+            .map_err(|_| AppError::Internal)?
+            .run().await.map_err(|_| AppError::Internal)?;
+        self.find_by_id(&tx.id).await?.ok_or_else(|| AppError::Internal)
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<Transaction>, AppError> {
         self.db.prepare("SELECT * FROM transactions WHERE id = ?1")
-            .bind(&[id.into()]).map_err(|e| AppError::Internal(e.to_string()))?
+            .bind(&[id.into()]).map_err(|_| AppError::Internal)?
             .first::<TransactionRow>(None).await
-            .map_err(|e| AppError::Internal(e.to_string())).map(|r| r.map(Into::into))
+            .map_err(|_| AppError::Internal).map(|r| r.map(Into::into))
     }
 
     pub async fn list(&self, f: TransactionFilter) -> Result<Vec<Transaction>, AppError> {
@@ -85,44 +77,17 @@ impl D1TransactionRepository {
                 f.workspace_id.into(), f.category.into(), f.transaction_type.into(),
                 f.date_from.into(), f.date_to.into(), limit.into(), offset.into(),
             ])
-            .map_err(|e| AppError::Internal(e.to_string()))?
-            .all().await.map_err(|e| AppError::Internal(e.to_string()))?;
+            .map_err(|_| AppError::Internal)?
+            .all().await.map_err(|_| AppError::Internal)?;
         results.results::<TransactionRow>()
-            .map_err(|e| AppError::Internal(e.to_string()))
+            .map_err(|_| AppError::Internal)
             .map(|rows| rows.into_iter().map(Into::into).collect())
-    }
-
-    pub async fn update(&self, id: &str, patch: TransactionPatch, now: &str) -> Result<Transaction, AppError> {
-        if let Some(amt) = patch.amount {
-            self.db.prepare("UPDATE transactions SET amount = ?1, updated_at = ?2 WHERE id = ?3")
-                .bind(&[amt.into(), now.into(), id.into()])
-                .map_err(|e| AppError::Internal(e.to_string()))?
-                .run().await.map_err(|e| AppError::Internal(e.to_string()))?;
-        }
-        if let Some(cat) = patch.category {
-            self.db.prepare("UPDATE transactions SET category = ?1, updated_at = ?2 WHERE id = ?3")
-                .bind(&[cat.into(), now.into(), id.into()])
-                .map_err(|e| AppError::Internal(e.to_string()))?
-                .run().await.map_err(|e| AppError::Internal(e.to_string()))?;
-        }
-        self.find_by_id(id).await?.ok_or_else(|| AppError::NotFound("transaction not found".into()))
     }
 
     pub async fn delete(&self, id: &str) -> Result<(), AppError> {
         self.db.prepare("DELETE FROM transactions WHERE id = ?1")
-            .bind(&[id.into()]).map_err(|e| AppError::Internal(e.to_string()))?
-            .run().await.map_err(|e| AppError::Internal(e.to_string()))?;
+            .bind(&[id.into()]).map_err(|_| AppError::Internal)?
+            .run().await.map_err(|_| AppError::Internal)?;
         Ok(())
-    }
-
-    pub async fn summary_by_category(&self, workspace_id: &str, date_from: &str, date_to: &str) -> Result<Vec<CategorySummary>, AppError> {
-        let results = self.db
-            .prepare("SELECT category, SUM(amount) as total, COUNT(*) as count, transaction_type FROM transactions WHERE workspace_id = ?1 AND transaction_date >= ?2 AND transaction_date <= ?3 GROUP BY category, transaction_type ORDER BY total DESC")
-            .bind(&[workspace_id.into(), date_from.into(), date_to.into()])
-            .map_err(|e| AppError::Internal(e.to_string()))?
-            .all().await.map_err(|e| AppError::Internal(e.to_string()))?;
-        results.results::<CategoryRow>()
-            .map_err(|e| AppError::Internal(e.to_string()))
-            .map(|rows| rows.into_iter().map(|r| CategorySummary { category: r.category, total: r.total, count: r.count, transaction_type: r.transaction_type }).collect())
     }
 }

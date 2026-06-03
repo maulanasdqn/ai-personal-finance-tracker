@@ -46,22 +46,22 @@ impl D1UserRepository {
                 user.created_at.into(),
                 user.updated_at.into(),
             ])
-            .map_err(|e| AppError::Internal(e.to_string()))?
+            .map_err(|_| AppError::Internal)?
             .run()
             .await
-            .map_err(|e| AppError::Conflict(format!("email already registered: {}", e)))?;
+            .map_err(|_| AppError::Conflict("email already registered".into()))?;
 
-        self.find_by_id(&user.id).await?.ok_or_else(|| AppError::Internal("insert failed".into()))
+        self.find_by_id(&user.id).await?.ok_or_else(|| AppError::Internal)
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<User>, AppError> {
         self.db
             .prepare("SELECT * FROM users WHERE id = ?1")
             .bind(&[id.into()])
-            .map_err(|e| AppError::Internal(e.to_string()))?
+            .map_err(|_| AppError::Internal)?
             .first::<UserRow>(None)
             .await
-            .map_err(|e| AppError::Internal(e.to_string()))
+            .map_err(|_| AppError::Internal)
             .map(|r| r.map(Into::into))
     }
 
@@ -69,10 +69,10 @@ impl D1UserRepository {
         self.db
             .prepare("SELECT * FROM users WHERE email = ?1")
             .bind(&[email.into()])
-            .map_err(|e| AppError::Internal(e.to_string()))?
+            .map_err(|_| AppError::Internal)?
             .first::<UserRow>(None)
             .await
-            .map_err(|e| AppError::Internal(e.to_string()))
+            .map_err(|_| AppError::Internal)
             .map(|r| r.map(Into::into))
     }
 }

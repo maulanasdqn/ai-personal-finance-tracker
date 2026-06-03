@@ -1,21 +1,9 @@
+use super::dto::{AuthOutput, RegisterInput};
 use crate::domain::user::entity::NewUser;
 use crate::error::AppError;
 use crate::infrastructure::auth::{jwt, password};
 use crate::infrastructure::repository::user::D1UserRepository;
 use uuid::Uuid;
-
-pub struct RegisterInput {
-    pub email: String,
-    pub password: String,
-    pub full_name: String,
-}
-
-pub struct AuthOutput {
-    pub token: String,
-    pub user_id: String,
-    pub email: String,
-    pub full_name: String,
-}
 
 pub async fn execute(input: RegisterInput, repo: &D1UserRepository, jwt_secret: &str) -> Result<AuthOutput, AppError> {
     if repo.find_by_email(&input.email).await?.is_some() {

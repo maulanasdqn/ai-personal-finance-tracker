@@ -1,2 +1,3 @@
+pub mod dto;
 pub mod login;
 pub mod register;

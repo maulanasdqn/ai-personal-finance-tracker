@@ -1,4 +1,5 @@
-use crate::application::bank_statement::use_cases::upload;
+use crate::application::bank_statement::use_cases::{dto::UploadInput, upload};
+use crate::application::validation::{sanitize_file_name, validate_file_upload};
 use crate::error::AppError;
 use crate::infrastructure::repository::{bank_statement::D1BankStatementRepository, workspace::D1WorkspaceRepository};
 use crate::presentation::{bank_statement::dto::BankStatementResponse, middleware::authenticate};
@@ -32,18 +33,19 @@ async fn handle_upload(mut req: Request, ctx: RouteContext<()>) -> Result<Respon
         .map_err(AppError::from)?
         .unwrap_or_else(|| "application/octet-stream".into());
 
-    let file_name = req.headers().get("x-file-name")
+    let raw_file_name = req.headers().get("x-file-name")
         .map_err(AppError::from)?
         .unwrap_or_else(|| "statement".into());
+    let file_name = sanitize_file_name(&raw_file_name);
 
     let bytes = req.bytes().await.map_err(AppError::from)?;
-    if bytes.is_empty() { return Err(AppError::BadRequest("file body is empty".into())); }
+    validate_file_upload(&bytes, &content_type)?;
 
     let bucket = ctx.env.bucket("STORAGE").map_err(AppError::from)?;
     let api_key = ctx.env.secret("DEEPSEEK_API_KEY").map_err(AppError::from)?.to_string();
     let repo = D1BankStatementRepository::new(ctx.env.d1("DB").map_err(AppError::from)?);
 
-    let stmt = upload::execute(upload::UploadInput {
+    let stmt = upload::execute(UploadInput {
         workspace_id: wid, file_name, file_data: bytes,
         content_type, created_by: user.user_id,
     }, &repo, &bucket, &api_key).await?;

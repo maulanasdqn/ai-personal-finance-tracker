@@ -1,14 +1,9 @@
+use super::dto::GenerateInsightsInput;
 use crate::domain::ai_insight::entity::{AiInsight, InsightType, NewAiInsight};
 use crate::domain::transaction::repository::TransactionFilter;
 use crate::error::AppError;
 use crate::infrastructure::{ai, repository::{ai_insight::D1AiInsightRepository, transaction::D1TransactionRepository}};
 use uuid::Uuid;
-
-pub struct GenerateInsightsInput {
-    pub workspace_id: String,
-    pub date_from: String,
-    pub date_to: String,
-}
 
 pub async fn execute(input: GenerateInsightsInput, tx_repo: &D1TransactionRepository, insight_repo: &D1AiInsightRepository, api_key: &str) -> Result<Vec<AiInsight>, AppError> {
     let transactions = tx_repo.list(TransactionFilter {
@@ -30,7 +25,7 @@ pub async fn execute(input: GenerateInsightsInput, tx_repo: &D1TransactionReposi
     let ai_response = ai::deepseek::analyze_text(&prompt, api_key).await?;
 
     let parsed: serde_json::Value = serde_json::from_str(&ai_response)
-        .map_err(|_| AppError::Internal("failed to parse AI response".into()))?;
+        .map_err(|_| AppError::Internal)?;
 
     let now = chrono::Utc::now().to_rfc3339();
     let mut results = vec![];

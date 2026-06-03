@@ -1,13 +1,8 @@
+use super::dto::CreateWorkspaceInput;
 use crate::domain::workspace::entity::{MemberRole, NewWorkspace};
 use crate::error::AppError;
 use crate::infrastructure::repository::workspace::D1WorkspaceRepository;
 use uuid::Uuid;
-
-pub struct CreateWorkspaceInput {
-    pub name: String,
-    pub description: Option<String>,
-    pub owner_id: String,
-}
 
 pub async fn execute(input: CreateWorkspaceInput, repo: &D1WorkspaceRepository) -> Result<crate::domain::workspace::entity::Workspace, AppError> {
     let now = chrono::Utc::now().to_rfc3339();

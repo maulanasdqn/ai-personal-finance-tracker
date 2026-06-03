@@ -32,15 +32,6 @@ pub struct NewTransaction {
     pub updated_at: String,
 }
 
-#[derive(Debug, Default)]
-pub struct TransactionPatch {
-    pub amount: Option<f64>,
-    pub category: Option<String>,
-    pub description: Option<Option<String>>,
-    pub transaction_date: Option<String>,
-    pub transaction_type: Option<TransactionType>,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum TransactionType {
@@ -92,5 +83,38 @@ impl std::str::FromStr for TransactionSource {
             "imported" => Ok(Self::Imported),
             _ => Err(format!("unknown source: {}", s)),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use wasm_bindgen_test::*;
+    wasm_bindgen_test_configure!(run_in_node);
+    use super::*;
+    use std::str::FromStr;
+
+    #[wasm_bindgen_test]
+    fn transaction_type_from_str_income() {
+        assert_eq!(TransactionType::from_str("income").unwrap(), TransactionType::Income);
+    }
+
+    #[wasm_bindgen_test]
+    fn transaction_type_from_str_expense() {
+        assert_eq!(TransactionType::from_str("expense").unwrap(), TransactionType::Expense);
+    }
+
+    #[wasm_bindgen_test]
+    fn transaction_type_from_str_unknown_is_err() {
+        assert!(TransactionType::from_str("transfer").is_err());
+    }
+
+    #[wasm_bindgen_test]
+    fn transaction_type_to_string_income() {
+        assert_eq!(TransactionType::Income.to_string(), "income");
+    }
+
+    #[wasm_bindgen_test]
+    fn transaction_type_to_string_expense() {
+        assert_eq!(TransactionType::Expense.to_string(), "expense");
     }
 }

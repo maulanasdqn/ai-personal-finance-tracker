@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use worker::Fetch;
 
 const API_URL: &str = "https://api.deepseek.com/v1/chat/completions";
-const MODEL: &str = "deepseek-v4-pro";
+const MODEL: &str = "deepseek-chat";
 
 #[derive(Serialize)]
 struct ChatRequest {
@@ -61,11 +61,28 @@ pub async fn analyze_image(base64_data: &str, media_type: &str, prompt: &str, ap
     call_api(body, api_key).await
 }
 
+#[cfg(test)]
+mod tests {
+    use wasm_bindgen_test::*;
+    wasm_bindgen_test_configure!(run_in_node);
+    use super::*;
+
+    #[wasm_bindgen_test]
+    fn model_is_deepseek_chat() {
+        assert_eq!(MODEL, "deepseek-chat");
+    }
+
+    #[wasm_bindgen_test]
+    fn api_url_contains_deepseek_com() {
+        assert!(API_URL.contains("deepseek.com"));
+    }
+}
+
 async fn call_api(body: ChatRequest, api_key: &str) -> Result<String, AppError> {
     let body_str = serde_json::to_string(&body)?;
     let mut headers = worker::Headers::new();
-    headers.set("content-type", "application/json").map_err(|e| AppError::Internal(e.to_string()))?;
-    headers.set("authorization", &format!("Bearer {}", api_key)).map_err(|e| AppError::Internal(e.to_string()))?;
+    headers.set("content-type", "application/json").map_err(|_| AppError::Internal)?;
+    headers.set("authorization", &format!("Bearer {}", api_key)).map_err(|_| AppError::Internal)?;
     let req = worker::Request::new_with_init(
         API_URL,
         worker::RequestInit::new()
@@ -73,22 +90,22 @@ async fn call_api(body: ChatRequest, api_key: &str) -> Result<String, AppError> 
             .with_body(Some(worker::wasm_bindgen::JsValue::from_str(&body_str)))
             .with_headers(headers),
     )
-    .map_err(|e| AppError::Internal(e.to_string()))?;
+    .map_err(|_| AppError::Internal)?;
 
     let mut resp = Fetch::Request(req.into())
         .send()
         .await
-        .map_err(|e| AppError::Internal(format!("DeepSeek API error: {}", e)))?;
+        .map_err(|_| AppError::Internal)?;
 
     let api_resp: ChatResponse = resp
         .json()
         .await
-        .map_err(|e| AppError::Internal(format!("DeepSeek response parse error: {}", e)))?;
+        .map_err(|_| AppError::Internal)?;
 
     api_resp
         .choices
         .into_iter()
         .next()
         .map(|c| c.message.content)
-        .ok_or_else(|| AppError::Internal("empty DeepSeek response".into()))
+        .ok_or_else(|| AppError::Internal)
 }

@@ -8,7 +8,8 @@ pub enum AppError {
     Unauthorized(String),
     Forbidden(String),
     Conflict(String),
-    Internal(String),
+    TooManyRequests(String),
+    Internal,
 }
 
 #[derive(Serialize)]
@@ -24,7 +25,8 @@ impl AppError {
             Self::Unauthorized(m) => (401, m),
             Self::Forbidden(m) => (403, m),
             Self::Conflict(m) => (409, m),
-            Self::Internal(m) => (500, m),
+            Self::TooManyRequests(m) => (429, m),
+            Self::Internal => (500, "internal server error".to_string()),
         };
         Response::from_json(&ErrorBody { message })
             .map(|r| r.with_status(status))
@@ -33,13 +35,13 @@ impl AppError {
 }
 
 impl From<worker::Error> for AppError {
-    fn from(e: worker::Error) -> Self {
-        Self::Internal(e.to_string())
+    fn from(_: worker::Error) -> Self {
+        Self::Internal
     }
 }
 
 impl From<serde_json::Error> for AppError {
-    fn from(e: serde_json::Error) -> Self {
-        Self::BadRequest(e.to_string())
+    fn from(_: serde_json::Error) -> Self {
+        Self::BadRequest("invalid request data".into())
     }
 }

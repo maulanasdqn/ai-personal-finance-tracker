@@ -1,12 +1,7 @@
-use crate::application::auth::register::AuthOutput;
+use super::dto::{AuthOutput, LoginInput};
 use crate::error::AppError;
 use crate::infrastructure::auth::{jwt, password};
 use crate::infrastructure::repository::user::D1UserRepository;
-
-pub struct LoginInput {
-    pub email: String,
-    pub password: String,
-}
 
 pub async fn execute(input: LoginInput, repo: &D1UserRepository, jwt_secret: &str) -> Result<AuthOutput, AppError> {
     let user = repo.find_by_email(&input.email).await?

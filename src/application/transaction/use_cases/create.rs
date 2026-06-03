@@ -1,19 +1,9 @@
+use super::dto::CreateTransactionInput;
 use crate::domain::transaction::entity::{NewTransaction, Transaction, TransactionSource, TransactionType};
 use crate::error::AppError;
 use crate::infrastructure::repository::transaction::D1TransactionRepository;
 use std::str::FromStr;
 use uuid::Uuid;
-
-pub struct CreateTransactionInput {
-    pub workspace_id: String,
-    pub amount: f64,
-    pub currency: Option<String>,
-    pub category: String,
-    pub description: Option<String>,
-    pub transaction_date: String,
-    pub transaction_type: String,
-    pub created_by: String,
-}
 
 pub async fn execute(input: CreateTransactionInput, repo: &D1TransactionRepository) -> Result<Transaction, AppError> {
     let now = chrono::Utc::now().to_rfc3339();

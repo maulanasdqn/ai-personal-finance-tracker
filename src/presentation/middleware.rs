@@ -4,7 +4,6 @@ use worker::Request;
 
 pub struct AuthUser {
     pub user_id: String,
-    pub email: String,
 }
 
 pub fn extract_bearer(req: &Request) -> Result<String, AppError> {
@@ -21,5 +20,5 @@ pub fn extract_bearer(req: &Request) -> Result<String, AppError> {
 pub fn authenticate(req: &Request, jwt_secret: &str) -> Result<AuthUser, AppError> {
     let token = extract_bearer(req)?;
     let claims = jwt::verify_token(&token, jwt_secret)?;
-    Ok(AuthUser { user_id: claims.user_id, email: claims.email })
+    Ok(AuthUser { user_id: claims.user_id })
 }
