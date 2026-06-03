@@ -2,10 +2,11 @@ pub const OPENAPI_SPEC: &str = r##"{
   "openapi": "3.0.3",
   "info": {
     "title": "AI Finance Tracker API",
-    "description": "Multi-workspace AI-powered personal finance tracker. Upload bank statements, get spending insights, and receive AI-generated financial recommendations powered by DeepSeek.",
+    "description": "Most personal finance apps ask you to do the work. This one doesn't.\n\nUpload a photo of your bank statement — the AI reads it, extracts the transactions, and files them. Ask it what you spent too much on and it tells you concretely, not in vague pie charts.\n\nThe workspace model lets you share a financial view with a partner, co-founder, or accountant. Everyone sees the same numbers, with role-based access controlling who can edit.\n\n**Auth** — JWT issued on login. Pass it as `Authorization: Bearer <token>` on all protected routes.\n\n**Stack** — Rust → WASM on Cloudflare Workers. D1 for persistence, R2 for file storage, DeepSeek for AI. No servers, no cold starts.",
     "version": "1.0.0",
     "contact": {
-      "name": "AI Finance Tracker"
+      "name": "maulanasdqn",
+      "url": "https://github.com/maulanasdqn/ai-personal-finance-tracker"
     }
   },
   "servers": [
