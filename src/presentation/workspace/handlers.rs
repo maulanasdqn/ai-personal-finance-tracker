@@ -1,5 +1,6 @@
 use crate::application::workspace::use_cases::{create, dto::{CreateWorkspaceInput, InviteMemberInput}, invite};
 use crate::domain::workspace::entity::WorkspacePatch;
+use crate::domain::workspace::repository::WorkspaceRepository;
 use crate::error::AppError;
 use crate::infrastructure::repository::{user::D1UserRepository, workspace::D1WorkspaceRepository};
 use crate::presentation::{guard, middleware::authenticate, workspace::dto::*};

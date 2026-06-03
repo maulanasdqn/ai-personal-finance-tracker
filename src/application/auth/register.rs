@@ -1,11 +1,11 @@
 use super::dto::{AuthOutput, RegisterInput};
 use crate::domain::user::entity::NewUser;
+use crate::domain::user::repository::UserRepository;
 use crate::error::AppError;
 use crate::infrastructure::auth::{jwt, password};
-use crate::infrastructure::repository::user::D1UserRepository;
 use uuid::Uuid;
 
-pub async fn execute(input: RegisterInput, repo: &D1UserRepository, jwt_secret: &str) -> Result<AuthOutput, AppError> {
+pub async fn execute(input: RegisterInput, repo: &impl UserRepository, jwt_secret: &str) -> Result<AuthOutput, AppError> {
     if repo.find_by_email(&input.email).await?.is_some() {
         return Err(AppError::Conflict("email already registered".into()));
     }

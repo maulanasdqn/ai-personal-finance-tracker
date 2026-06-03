@@ -1,12 +1,13 @@
 use super::dto::UploadInput;
 use crate::domain::bank_statement::entity::{BankStatement, FileType, NewBankStatement, ProcessingStatus};
+use crate::domain::bank_statement::repository::BankStatementRepository;
 use crate::error::AppError;
-use crate::infrastructure::{ai, repository::bank_statement::D1BankStatementRepository, storage::r2};
+use crate::infrastructure::{ai, storage::r2};
 use worker::Bucket;
 use base64::{engine::general_purpose::STANDARD, Engine};
 use uuid::Uuid;
 
-pub async fn execute(input: UploadInput, repo: &D1BankStatementRepository, bucket: &Bucket, api_key: &str) -> Result<BankStatement, AppError> {
+pub async fn execute(input: UploadInput, repo: &impl BankStatementRepository, bucket: &Bucket, api_key: &str) -> Result<BankStatement, AppError> {
     let file_type = detect_file_type(&input.content_type);
     let now = chrono::Utc::now().to_rfc3339();
     let id = Uuid::new_v4().to_string();

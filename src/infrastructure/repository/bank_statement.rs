@@ -1,8 +1,10 @@
 use crate::domain::bank_statement::entity::{BankStatement, FileType, NewBankStatement, ProcessingStatus};
+use crate::domain::bank_statement::repository::BankStatementRepository;
 use crate::error::AppError;
+use rust_d1_orm::{opt_js, D1Model, Order, Query, Set, Table};
 use serde::Deserialize;
 use std::str::FromStr;
-use worker::D1Database;
+use worker::{wasm_bindgen::JsValue, D1Database};
 
 #[derive(Deserialize)]
 struct BankStatementRow {
@@ -19,20 +21,35 @@ struct BankStatementRow {
     updated_at: String,
 }
 
+impl D1Model for BankStatementRow {
+    const TABLE: &'static str = "bank_statements";
+    const COLUMNS: &'static [&'static str] = &[
+        "id", "workspace_id", "file_key", "file_name", "file_type",
+        "status", "parsed_transactions", "ai_summary",
+        "created_by", "created_at", "updated_at",
+    ];
+    fn values(&self) -> Vec<JsValue> {
+        vec![
+            self.id.clone().into(), self.workspace_id.clone().into(),
+            self.file_key.clone().into(), self.file_name.clone().into(),
+            self.file_type.clone().into(), self.status.clone().into(),
+            opt_js(self.parsed_transactions.clone()), opt_js(self.ai_summary.clone()),
+            self.created_by.clone().into(), self.created_at.clone().into(),
+            self.updated_at.clone().into(),
+        ]
+    }
+}
+
 impl From<BankStatementRow> for BankStatement {
     fn from(r: BankStatementRow) -> Self {
         Self {
-            id: r.id,
-            workspace_id: r.workspace_id,
-            file_key: r.file_key,
+            id: r.id, workspace_id: r.workspace_id, file_key: r.file_key,
             file_name: r.file_name,
             file_type: FileType::from_str(&r.file_type).unwrap_or(FileType::Image),
             status: ProcessingStatus::from_str(&r.status).unwrap_or(ProcessingStatus::Pending),
             parsed_transactions: r.parsed_transactions.and_then(|s| serde_json::from_str(&s).ok()),
-            ai_summary: r.ai_summary,
-            created_by: r.created_by,
-            created_at: r.created_at,
-            updated_at: r.updated_at,
+            ai_summary: r.ai_summary, created_by: r.created_by,
+            created_at: r.created_at, updated_at: r.updated_at,
         }
     }
 }
@@ -50,45 +67,52 @@ impl std::str::FromStr for ProcessingStatus {
     }
 }
 
-pub struct D1BankStatementRepository {
-    db: D1Database,
-}
+pub struct D1BankStatementRepository { db: D1Database }
 
 impl D1BankStatementRepository {
     pub fn new(db: D1Database) -> Self { Self { db } }
+}
 
-    pub async fn create(&self, s: NewBankStatement) -> Result<BankStatement, AppError> {
-        self.db
-            .prepare("INSERT INTO bank_statements (id, workspace_id, file_key, file_name, file_type, status, created_by, created_at, updated_at) VALUES (?1,?2,?3,?4,?5,'pending',?6,?7,?8)")
-            .bind(&[s.id.clone().into(), s.workspace_id.into(), s.file_key.into(), s.file_name.into(), s.file_type.to_string().into(), s.created_by.into(), s.created_at.into(), s.updated_at.into()])
-            .map_err(|_| AppError::Internal)?
-            .run().await.map_err(|_| AppError::Internal)?;
-        self.find_by_id(&s.id).await?.ok_or_else(|| AppError::Internal)
+impl BankStatementRepository for D1BankStatementRepository {
+    async fn create(&self, s: NewBankStatement) -> Result<BankStatement, AppError> {
+        let row = BankStatementRow {
+            id: s.id, workspace_id: s.workspace_id, file_key: s.file_key,
+            file_name: s.file_name, file_type: s.file_type.to_string(),
+            status: "pending".to_string(), parsed_transactions: None,
+            ai_summary: None, created_by: s.created_by,
+            created_at: s.created_at, updated_at: s.updated_at,
+        };
+        Table::<BankStatementRow>::new(&self.db)
+            .insert(&row).await
+            .map_err(|_| AppError::Internal)
+            .map(Into::into)
     }
 
-    pub async fn find_by_id(&self, id: &str) -> Result<Option<BankStatement>, AppError> {
-        self.db.prepare("SELECT * FROM bank_statements WHERE id = ?1")
-            .bind(&[id.into()]).map_err(|_| AppError::Internal)?
-            .first::<BankStatementRow>(None).await
-            .map_err(|_| AppError::Internal).map(|r| r.map(Into::into))
+    async fn find_by_id(&self, id: &str) -> Result<Option<BankStatement>, AppError> {
+        Table::<BankStatementRow>::new(&self.db)
+            .find_one(Query::new().eq("id", id)).await
+            .map_err(|_| AppError::Internal)
+            .map(|r| r.map(Into::into))
     }
 
-    pub async fn list_by_workspace(&self, workspace_id: &str) -> Result<Vec<BankStatement>, AppError> {
-        let results = self.db.prepare("SELECT * FROM bank_statements WHERE workspace_id = ?1 ORDER BY created_at DESC")
-            .bind(&[workspace_id.into()]).map_err(|_| AppError::Internal)?
-            .all().await.map_err(|_| AppError::Internal)?;
-        results.results::<BankStatementRow>()
+    async fn list_by_workspace(&self, workspace_id: &str) -> Result<Vec<BankStatement>, AppError> {
+        Table::<BankStatementRow>::new(&self.db)
+            .find_all(Query::new().eq("workspace_id", workspace_id).order_by("created_at", Order::Desc)).await
             .map_err(|_| AppError::Internal)
             .map(|rows| rows.into_iter().map(Into::into).collect())
     }
 
-    pub async fn update_status(&self, id: &str, status: ProcessingStatus, parsed: Option<serde_json::Value>, summary: Option<String>, now: &str) -> Result<BankStatement, AppError> {
+    async fn update_status(&self, id: &str, status: ProcessingStatus, parsed: Option<serde_json::Value>, summary: Option<String>, now: &str) -> Result<BankStatement, AppError> {
         let parsed_str = parsed.map(|v| v.to_string());
-        self.db.prepare("UPDATE bank_statements SET status = ?1, parsed_transactions = ?2, ai_summary = ?3, updated_at = ?4 WHERE id = ?5")
-            .bind(&[status.to_string().into(), parsed_str.into(), summary.into(), now.into(), id.into()])
+        let set = Set::new()
+            .field("status", status.to_string())
+            .nullable_field("parsed_transactions", parsed_str)
+            .nullable_field("ai_summary", summary)
+            .field("updated_at", now);
+        Table::<BankStatementRow>::new(&self.db)
+            .update(set, Query::new().eq("id", id)).await
             .map_err(|_| AppError::Internal)?
-            .run().await.map_err(|_| AppError::Internal)?;
-        self.find_by_id(id).await?.ok_or_else(|| AppError::NotFound("statement not found".into()))
+            .ok_or_else(|| AppError::NotFound("statement not found".into()))
+            .map(Into::into)
     }
-
 }

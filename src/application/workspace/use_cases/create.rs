@@ -1,10 +1,10 @@
 use super::dto::CreateWorkspaceInput;
 use crate::domain::workspace::entity::{MemberRole, NewWorkspace};
+use crate::domain::workspace::repository::WorkspaceRepository;
 use crate::error::AppError;
-use crate::infrastructure::repository::workspace::D1WorkspaceRepository;
 use uuid::Uuid;
 
-pub async fn execute(input: CreateWorkspaceInput, repo: &D1WorkspaceRepository) -> Result<crate::domain::workspace::entity::Workspace, AppError> {
+pub async fn execute(input: CreateWorkspaceInput, repo: &impl WorkspaceRepository) -> Result<crate::domain::workspace::entity::Workspace, AppError> {
     let now = chrono::Utc::now().to_rfc3339();
     let id = Uuid::new_v4().to_string();
     let workspace = repo.create(NewWorkspace {

@@ -1,12 +1,63 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum TransactionCategory {
+    Food,
+    Transport,
+    Shopping,
+    Entertainment,
+    Health,
+    Education,
+    Utilities,
+    Salary,
+    Investment,
+    Other,
+}
+
+impl std::fmt::Display for TransactionCategory {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Self::Food => "Food",
+            Self::Transport => "Transport",
+            Self::Shopping => "Shopping",
+            Self::Entertainment => "Entertainment",
+            Self::Health => "Health",
+            Self::Education => "Education",
+            Self::Utilities => "Utilities",
+            Self::Salary => "Salary",
+            Self::Investment => "Investment",
+            Self::Other => "Other",
+        };
+        write!(f, "{}", s)
+    }
+}
+
+impl std::str::FromStr for TransactionCategory {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Food" => Ok(Self::Food),
+            "Transport" => Ok(Self::Transport),
+            "Shopping" => Ok(Self::Shopping),
+            "Entertainment" => Ok(Self::Entertainment),
+            "Health" => Ok(Self::Health),
+            "Education" => Ok(Self::Education),
+            "Utilities" => Ok(Self::Utilities),
+            "Salary" => Ok(Self::Salary),
+            "Investment" => Ok(Self::Investment),
+            "Other" => Ok(Self::Other),
+            _ => Err(format!("unknown category: {}", s)),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
     pub id: String,
     pub workspace_id: String,
     pub amount: f64,
     pub currency: String,
-    pub category: String,
+    pub category: TransactionCategory,
     pub description: Option<String>,
     pub transaction_date: String,
     pub transaction_type: TransactionType,
@@ -22,7 +73,7 @@ pub struct NewTransaction {
     pub workspace_id: String,
     pub amount: f64,
     pub currency: String,
-    pub category: String,
+    pub category: TransactionCategory,
     pub description: Option<String>,
     pub transaction_date: String,
     pub transaction_type: TransactionType,

@@ -1,4 +1,6 @@
 use crate::application::ai_insight::use_cases::{dto::GenerateInsightsInput, generate};
+use crate::domain::ai_insight::repository::AiInsightRepository;
+use crate::domain::workspace::repository::WorkspaceRepository;
 use crate::error::AppError;
 use crate::infrastructure::repository::{ai_insight::D1AiInsightRepository, transaction::D1TransactionRepository, workspace::D1WorkspaceRepository};
 use crate::presentation::{ai_insight::dto::*, guard, middleware::authenticate};

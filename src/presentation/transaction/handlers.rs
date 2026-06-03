@@ -1,5 +1,6 @@
 use crate::application::transaction::use_cases::{create as create_uc, dto::CreateTransactionInput};
-use crate::domain::transaction::repository::TransactionFilter;
+use crate::domain::transaction::repository::{TransactionFilter, TransactionRepository};
+use crate::domain::workspace::repository::WorkspaceRepository;
 use crate::error::AppError;
 use crate::infrastructure::repository::{transaction::D1TransactionRepository, workspace::D1WorkspaceRepository};
 use crate::presentation::{guard, middleware::authenticate, transaction::dto::*};
@@ -49,9 +50,13 @@ async fn handle_create(mut req: Request, ctx: RouteContext<()>) -> Result<Respon
     guard::limit_body(&req)?;
     let wid = ctx.param("workspace_id").ok_or_else(|| AppError::BadRequest("missing workspace_id".into()))?.to_string();
     let user = auth_member!(req, ctx, &wid);
-    let raw: serde_json::Value = req.json().await.map_err(|_| AppError::BadRequest("invalid JSON".into()))?;
-    let body = CreateTransactionRequest::validate_and_parse(&raw)
-        .map_err(|e| AppError::BadRequest(e.to_string()))?;
+    let body: CreateTransactionRequest = req.json().await.map_err(|_| AppError::BadRequest("invalid request body".into()))?;
+    if body.amount < 0.01 || body.amount > 1_000_000_000_000.0 {
+        return Err(AppError::BadRequest("amount must be between 0.01 and 1,000,000,000,000".into()));
+    }
+    if !is_valid_date(&body.transaction_date) {
+        return Err(AppError::BadRequest("transaction_date must be in YYYY-MM-DD format".into()));
+    }
     let db = ctx.env.d1("DB").map_err(AppError::from)?;
     let repo = D1TransactionRepository::new(db);
     let tx = create_uc::execute(CreateTransactionInput {
@@ -89,4 +94,13 @@ async fn handle_delete(req: Request, ctx: RouteContext<()>) -> Result<Response, 
     let repo = D1TransactionRepository::new(db);
     repo.delete(&txid).await?;
     Response::ok("deleted").map_err(AppError::from)
+}
+
+fn is_valid_date(s: &str) -> bool {
+    s.len() == 10
+        && s.as_bytes()[4] == b'-'
+        && s.as_bytes()[7] == b'-'
+        && s[..4].parse::<u32>().is_ok()
+        && s[5..7].parse::<u32>().is_ok()
+        && s[8..10].parse::<u32>().is_ok()
 }

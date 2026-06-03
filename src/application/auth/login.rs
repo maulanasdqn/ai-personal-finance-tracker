@@ -1,9 +1,9 @@
 use super::dto::{AuthOutput, LoginInput};
+use crate::domain::user::repository::UserRepository;
 use crate::error::AppError;
 use crate::infrastructure::auth::{jwt, password};
-use crate::infrastructure::repository::user::D1UserRepository;
 
-pub async fn execute(input: LoginInput, repo: &D1UserRepository, jwt_secret: &str) -> Result<AuthOutput, AppError> {
+pub async fn execute(input: LoginInput, repo: &impl UserRepository, jwt_secret: &str) -> Result<AuthOutput, AppError> {
     let user = repo.find_by_email(&input.email).await?
         .ok_or_else(|| AppError::Unauthorized("invalid email or password".into()))?;
     let valid = password::verify_password(&input.password, &user.password_hash)?;

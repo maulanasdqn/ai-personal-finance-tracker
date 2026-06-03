@@ -78,6 +78,7 @@ dependencies = [
  "hex",
  "jwt-simple",
  "pbkdf2",
+ "rust-d1-orm",
  "serde",
  "serde_json",
  "sha2",
@@ -1430,6 +1431,16 @@ dependencies = [
  "spki 0.7.3",
  "subtle",
  "zeroize",
+]
+
+[[package]]
+name = "rust-d1-orm"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2064e38a574f2620e88a2d47bd9e95f1aa7a6f964ecc378cf0d248d64ee36b2"
+dependencies = [
+ "serde",
+ "worker",
 ]
 
 [[package]]
