@@ -1,0 +1,19 @@
+[package]
+name = "finance-android"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "finance_android"
+crate-type = ["cdylib"]
+
+[dependencies]
+jni = { version = "0.21", default-features = false }
+ureq = { version = "2", features = ["json", "tls"] }
+serde_json = "1"
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true
+panic = "abort"
