@@ -1,0 +1,5 @@
+/target
+/build
+.env
+.dev.vars
+wrangler.toml.bak
