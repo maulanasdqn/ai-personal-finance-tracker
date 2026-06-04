@@ -27,7 +27,10 @@ class SessionManager @Inject constructor(private val dataStore: DataStore<Prefer
     val userId: Flow<String?> = dataStore.data.map { it[USER_ID_KEY] }
     val email: Flow<String?> = dataStore.data.map { it[EMAIL_KEY] }
     val fullName: Flow<String?> = dataStore.data.map { it[FULL_NAME_KEY] }
-    val baseUrl: Flow<String> = dataStore.data.map { it[BASE_URL_KEY] ?: DEFAULT_BASE_URL }
+    val baseUrl: Flow<String> = dataStore.data.map {
+        val stored = it[BASE_URL_KEY] ?: DEFAULT_BASE_URL
+        if (stored.endsWith("/api/v1") || stored.endsWith("/api/v1/")) DEFAULT_BASE_URL else stored
+    }
     val workspaceId: Flow<String?> = dataStore.data.map { it[WORKSPACE_ID_KEY] }
 
     suspend fun saveSession(token: String, userId: String, email: String, fullName: String) {
