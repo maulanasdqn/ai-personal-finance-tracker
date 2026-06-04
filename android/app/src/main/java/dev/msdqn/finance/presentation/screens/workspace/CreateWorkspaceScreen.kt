@@ -31,8 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import dev.msdqn.finance.presentation.theme.ButtonPastel
 import dev.msdqn.finance.presentation.theme.CardWhite
-import dev.msdqn.finance.presentation.theme.DarkSurface
 import dev.msdqn.finance.presentation.theme.MintBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +71,7 @@ fun CreateWorkspaceScreen(onBack: () -> Unit, viewModel: CreateWorkspaceViewMode
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 enabled = !state.isLoading,
                 shape = RoundedCornerShape(28.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = DarkSurface, contentColor = CardWhite),
+                colors = ButtonDefaults.buttonColors(containerColor = ButtonPastel, contentColor = CardWhite),
             ) {
                 Text(if (state.isLoading) "Creating..." else "Create Workspace", fontWeight = FontWeight.SemiBold)
             }

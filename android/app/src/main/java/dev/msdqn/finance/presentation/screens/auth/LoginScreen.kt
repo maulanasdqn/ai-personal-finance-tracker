@@ -30,8 +30,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import dev.msdqn.finance.presentation.theme.ButtonPastel
 import dev.msdqn.finance.presentation.theme.CardWhite
-import dev.msdqn.finance.presentation.theme.DarkSurface
 import dev.msdqn.finance.presentation.theme.MintBackground
 
 @Composable
@@ -86,7 +86,7 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth().height(52.dp),
             enabled = !uiState.isLoading,
             shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = DarkSurface, contentColor = CardWhite),
+            colors = ButtonDefaults.buttonColors(containerColor = ButtonPastel, contentColor = CardWhite),
         ) {
             Text(if (uiState.isLoading) "Signing in..." else "Sign In", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
         }

@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import dev.msdqn.finance.presentation.theme.ButtonPastel
 import dev.msdqn.finance.presentation.theme.CardWhite
 import dev.msdqn.finance.presentation.theme.DarkSurface
 import dev.msdqn.finance.presentation.theme.ExpenseRed
@@ -188,7 +189,7 @@ fun CreateTransactionScreen(onBack: () -> Unit, viewModel: CreateTransactionView
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
                 .clip(RoundedCornerShape(28.dp))
-                .background(DarkSurface)
+                .background(ButtonPastel)
                 .clickable(enabled = !state.isLoading) { viewModel.create() }
                 .padding(vertical = 18.dp),
             contentAlignment = Alignment.Center,

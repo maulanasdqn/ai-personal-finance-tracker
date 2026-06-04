@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.msdqn.finance.domain.model.Workspace
+import dev.msdqn.finance.presentation.theme.ButtonPastel
 import dev.msdqn.finance.presentation.theme.CardWhite
-import dev.msdqn.finance.presentation.theme.DarkSurface
 import dev.msdqn.finance.presentation.theme.MintBackground
 
 @Composable
@@ -56,7 +56,7 @@ fun WorkspaceScreen(onNavigateToCreate: () -> Unit, viewModel: WorkspaceViewMode
         FloatingActionButton(
             onClick = onNavigateToCreate,
             modifier = Modifier.align(Alignment.BottomEnd).padding(end = 24.dp, bottom = 120.dp),
-            containerColor = DarkSurface,
+            containerColor = ButtonPastel,
             shape = RoundedCornerShape(16.dp),
         ) {
             Icon(Icons.Filled.Add, contentDescription = "Create workspace", tint = CardWhite)

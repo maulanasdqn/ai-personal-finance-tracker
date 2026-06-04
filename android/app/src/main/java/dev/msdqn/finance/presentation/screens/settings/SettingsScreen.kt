@@ -21,6 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import dev.msdqn.finance.presentation.theme.ButtonPastelRed
+import dev.msdqn.finance.presentation.theme.CardWhite
 import dev.msdqn.finance.presentation.theme.MintBackground
 import dev.msdqn.finance.presentation.theme.TextSecondary
 
@@ -47,7 +49,7 @@ fun SettingsScreen(onNavigateToLogin: () -> Unit, viewModel: SettingsViewModel =
         Button(
             onClick = { viewModel.logout(onNavigateToLogin) },
             modifier = Modifier.fillMaxWidth().height(52.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+            colors = ButtonDefaults.buttonColors(containerColor = ButtonPastelRed, contentColor = CardWhite),
             shape = RoundedCornerShape(28.dp),
         ) {
             Text("Sign Out", fontWeight = FontWeight.SemiBold)

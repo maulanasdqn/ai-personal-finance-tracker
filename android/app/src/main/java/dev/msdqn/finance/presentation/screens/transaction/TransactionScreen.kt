@@ -32,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.msdqn.finance.presentation.screens.home.TransactionRow
+import dev.msdqn.finance.presentation.theme.ButtonPastel
+import dev.msdqn.finance.presentation.theme.CardWhite
 import dev.msdqn.finance.presentation.theme.DarkSurface
 import dev.msdqn.finance.presentation.theme.MintBackground
 import dev.msdqn.finance.presentation.theme.SectionLabel
@@ -93,10 +95,10 @@ fun TransactionScreen(
         FloatingActionButton(
             onClick = onNavigateToCreate,
             modifier = Modifier.align(Alignment.BottomEnd).padding(end = 24.dp, bottom = 112.dp),
-            containerColor = DarkSurface,
+            containerColor = ButtonPastel,
             shape = RoundedCornerShape(16.dp),
         ) {
-            Icon(Icons.Filled.Add, contentDescription = "Add", tint = androidx.compose.ui.graphics.Color.White)
+            Icon(Icons.Filled.Add, contentDescription = "Add", tint = CardWhite)
         }
     }
 }
