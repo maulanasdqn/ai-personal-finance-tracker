@@ -1,0 +1,9 @@
+[target.aarch64-linux-android]
+linker = "/nix/store/w7fc3658kgbcmlgyjhzplak1v0y6yfdc-androidsdk/libexec/android-sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang"
+ar = "/nix/store/w7fc3658kgbcmlgyjhzplak1v0y6yfdc-androidsdk/libexec/android-sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-ar"
+
+[env]
+CC_aarch64_linux_android = "/nix/store/w7fc3658kgbcmlgyjhzplak1v0y6yfdc-androidsdk/libexec/android-sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang"
+CXX_aarch64_linux_android = "/nix/store/w7fc3658kgbcmlgyjhzplak1v0y6yfdc-androidsdk/libexec/android-sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang++"
+AR_aarch64_linux_android = "/nix/store/w7fc3658kgbcmlgyjhzplak1v0y6yfdc-androidsdk/libexec/android-sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-ar"
+ANDROID_NDK_HOME = "/nix/store/w7fc3658kgbcmlgyjhzplak1v0y6yfdc-androidsdk/libexec/android-sdk/ndk/27.2.12479018"

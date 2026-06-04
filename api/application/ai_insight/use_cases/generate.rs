@@ -77,10 +77,7 @@ pub async fn execute(
                 id: Uuid::new_v4().to_string(),
                 workspace_id: input.workspace_id.clone(),
                 insight_type: InsightType::Recommendation,
-                title: rec["title"]
-                    .as_str()
-                    .unwrap_or("Recommendation")
-                    .to_owned(),
+                title: rec["title"].as_str().unwrap_or("Recommendation").to_owned(),
                 content: rec["reason"].as_str().unwrap_or("").to_owned(),
                 metadata: Some(rec.clone()),
                 created_at: now.clone(),

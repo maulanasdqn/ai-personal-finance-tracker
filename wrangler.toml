@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [build]
 command = "~/.cargo/bin/worker-build --release"
-watch_dir = "apps"
+watch_dir = "api"
 
 [placement]
 mode = "smart"
@@ -28,10 +28,6 @@ bucket_name = "ai-finance-tracker-storage"
 
 [vars]
 ENVIRONMENT = "production"
-
-# Secrets — set via CLI, never in this file:
-#   wrangler secret put JWT_SECRET
-#   wrangler secret put DEEPSEEK_API_KEY
 
 [env.staging]
 name = "ai-finance-tracker-staging"

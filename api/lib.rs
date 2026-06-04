@@ -11,7 +11,7 @@
     clippy::print_stderr,
     clippy::str_to_string,
     clippy::exit,
-    clippy::mem_forget,
+    clippy::mem_forget
 )]
 #![allow(
     clippy::future_not_send,      // WASM is single-threaded
