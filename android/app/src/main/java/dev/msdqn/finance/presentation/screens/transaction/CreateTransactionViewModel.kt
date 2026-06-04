@@ -18,7 +18,7 @@ data class CreateTransactionState(
     val category: String = "",
     val date: String = LocalDate.now().toString(),
     val type: String = "expense",
-    val currency: String = "USD",
+    val currency: String = "IDR",
     val isLoading: Boolean = false,
     val success: Boolean = false,
     val error: String? = null,
@@ -36,7 +36,7 @@ class CreateTransactionViewModel @Inject constructor(
     fun appendDigit(digit: Int) {
         _state.update { s ->
             val newCents = s.cents * 10 + digit
-            if (newCents > 999_999_999_99L) s else s.copy(cents = newCents)
+            if (newCents > 999_999_999_999L) s else s.copy(cents = newCents)
         }
     }
 
@@ -54,7 +54,7 @@ class CreateTransactionViewModel @Inject constructor(
             _state.update { it.copy(error = "Enter amount and category") }
             return
         }
-        val amount = s.cents.toDouble() / 100.0
+        val amount = s.cents.toDouble()
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             val token = session.token.first() ?: return@launch

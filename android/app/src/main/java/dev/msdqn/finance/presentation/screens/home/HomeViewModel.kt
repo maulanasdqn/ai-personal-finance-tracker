@@ -19,7 +19,7 @@ data class HomeUiState(
     val recentTransactions: List<Transaction> = emptyList(),
     val totalBalance: Double = 0.0,
     val todayChange: Double = 0.0,
-    val currency: String = "USD",
+    val currency: String = "IDR",
     val error: String? = null,
 )
 

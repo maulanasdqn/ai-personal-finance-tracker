@@ -55,13 +55,7 @@ import dev.msdqn.finance.presentation.theme.MintSurface
 import dev.msdqn.finance.presentation.theme.TextMuted
 import dev.msdqn.finance.presentation.theme.TextSecondary
 import dev.msdqn.finance.presentation.theme.YellowCard
-import java.text.NumberFormat
-import java.util.Locale
-
-private val fmt: NumberFormat = NumberFormat.getNumberInstance(Locale.US).apply {
-    minimumFractionDigits = 2
-    maximumFractionDigits = 2
-}
+import dev.msdqn.finance.presentation.util.formatRupiah
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltViewModel()) {
@@ -117,11 +111,11 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
                     modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(YellowCard).padding(24.dp),
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                        Text(uiState.currency, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = DarkSurface.copy(alpha = 0.6f))
+                        Text("Total Saldo", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = DarkSurface.copy(alpha = 0.6f))
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "$${fmt.format(uiState.totalBalance)}",
-                            fontSize = 38.sp,
+                            text = formatRupiah(uiState.totalBalance),
+                            fontSize = 32.sp,
                             fontWeight = FontWeight.Bold,
                             color = DarkSurface,
                             textAlign = TextAlign.Center,
@@ -129,7 +123,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
                         Spacer(Modifier.height(4.dp))
                         val changeSign = if (uiState.todayChange >= 0) "+" else ""
                         Text(
-                            text = "$changeSign$${fmt.format(uiState.todayChange)} today",
+                            text = "${changeSign}${formatRupiah(uiState.todayChange)} today",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
                             color = if (uiState.todayChange >= 0) IncomeGreen else ExpenseRed,
@@ -214,7 +208,7 @@ fun TransactionRow(tx: Transaction, modifier: Modifier = Modifier) {
                 Text(tx.transactionType.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.bodyMedium)
             }
             Text(
-                text = "$amountSign${tx.currency} ${fmt.format(tx.amount)}",
+                text = "$amountSign${formatRupiah(tx.amount)}",
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 15.sp,
                 color = amountColor,

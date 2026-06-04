@@ -46,14 +46,7 @@ import dev.msdqn.finance.presentation.theme.IncomeGreen
 import dev.msdqn.finance.presentation.theme.MintBackground
 import dev.msdqn.finance.presentation.theme.MintSurface
 import dev.msdqn.finance.presentation.theme.TextSecondary
-import java.text.NumberFormat
-import java.util.Locale
-
-private fun formatCents(cents: Long): String {
-    val whole = cents / 100
-    val frac = cents % 100
-    return "$${NumberFormat.getNumberInstance(Locale.US).format(whole)}.${frac.toString().padStart(2, '0')}"
-}
+import dev.msdqn.finance.presentation.util.formatRupiahLong
 
 @Composable
 fun CreateTransactionScreen(onBack: () -> Unit, viewModel: CreateTransactionViewModel = hiltViewModel()) {
@@ -108,7 +101,7 @@ fun CreateTransactionScreen(onBack: () -> Unit, viewModel: CreateTransactionView
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = formatCents(state.cents),
+                text = formatRupiahLong(state.cents),
                 fontSize = 44.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkSurface,
