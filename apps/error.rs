@@ -26,10 +26,10 @@ impl AppError {
             Self::Forbidden(m) => (403, m),
             Self::Conflict(m) => (409, m),
             Self::TooManyRequests(m) => (429, m),
-            Self::Internal => (500, "internal server error".to_string()),
+            Self::Internal => (500, "internal server error".to_owned()),
         };
         Response::from_json(&ErrorBody { message }).map_or_else(
-            |_| Response::error("internal server error", 500).unwrap(),
+            |_| Response::error("internal server error", 500).expect("infallible"),
             |r| r.with_status(status),
         )
     }

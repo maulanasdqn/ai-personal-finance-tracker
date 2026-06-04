@@ -106,7 +106,7 @@ impl BankStatementRepository for D1BankStatementRepository {
             file_key: s.file_key,
             file_name: s.file_name,
             file_type: s.file_type.to_string(),
-            status: "pending".to_string(),
+            status: "pending".to_owned(),
             parsed_transactions: None,
             ai_summary: None,
             created_by: s.created_by,

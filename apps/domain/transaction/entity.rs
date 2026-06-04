@@ -141,6 +141,7 @@ impl std::str::FromStr for TransactionSource {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used)]
     use wasm_bindgen_test::*;
     wasm_bindgen_test_configure!(run_in_node);
     use super::*;

@@ -1,4 +1,18 @@
-#![deny(clippy::all, clippy::pedantic, clippy::nursery)]
+#![deny(
+    clippy::all,
+    clippy::pedantic,
+    clippy::nursery,
+    clippy::unwrap_used,
+    clippy::panic,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::dbg_macro,
+    clippy::print_stdout,
+    clippy::print_stderr,
+    clippy::str_to_string,
+    clippy::exit,
+    clippy::mem_forget,
+)]
 #![allow(
     clippy::future_not_send,      // WASM is single-threaded
     clippy::missing_errors_doc,   // no public doc comments

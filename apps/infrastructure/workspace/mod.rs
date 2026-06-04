@@ -189,10 +189,10 @@ impl WorkspaceRepository for D1WorkspaceRepository {
             ));
         }
         let row = MemberRow {
-            workspace_id: workspace_id.to_string(),
-            user_id: user_id.to_string(),
+            workspace_id: workspace_id.to_owned(),
+            user_id: user_id.to_owned(),
             role: role.to_string(),
-            joined_at: now.to_string(),
+            joined_at: now.to_owned(),
         };
         Table::<MemberRow>::new(&self.db)
             .insert(&row)

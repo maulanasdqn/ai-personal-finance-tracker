@@ -39,7 +39,7 @@ pub async fn analyze_text(prompt: &str, api_key: &str) -> Result<String, AppErro
         max_tokens: 2048,
         messages: vec![ChatMessage {
             role: "user",
-            content: serde_json::Value::String(prompt.to_string()),
+            content: serde_json::Value::String(prompt.to_owned()),
         }],
     };
     call_api(body, api_key).await

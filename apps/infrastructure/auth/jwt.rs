@@ -12,8 +12,8 @@ pub fn generate_token(user_id: &str, email: &str, secret: &str) -> Result<String
     let key = HS256Key::from_bytes(secret.as_bytes());
     let claims = Claims::with_custom_claims(
         AuthClaims {
-            user_id: user_id.to_string(),
-            email: email.to_string(),
+            user_id: user_id.to_owned(),
+            email: email.to_owned(),
         },
         Duration::from_hours(24),
     );

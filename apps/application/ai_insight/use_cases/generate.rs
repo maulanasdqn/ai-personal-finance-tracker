@@ -46,8 +46,8 @@ pub async fn execute(
                 id: Uuid::new_v4().to_string(),
                 workspace_id: input.workspace_id.clone(),
                 insight_type: InsightType::Tip,
-                title: tip["title"].as_str().unwrap_or("Financial Tip").to_string(),
-                content: tip["content"].as_str().unwrap_or("").to_string(),
+                title: tip["title"].as_str().unwrap_or("Financial Tip").to_owned(),
+                content: tip["content"].as_str().unwrap_or("").to_owned(),
                 metadata: None,
                 created_at: now.clone(),
             });
@@ -64,7 +64,7 @@ pub async fn execute(
                     let cat = item["category"].as_str().unwrap_or("");
                     format!("Reduce {cat} spending")
                 },
-                content: item["advice"].as_str().unwrap_or("").to_string(),
+                content: item["advice"].as_str().unwrap_or("").to_owned(),
                 metadata: Some(item.clone()),
                 created_at: now.clone(),
             });
@@ -80,8 +80,8 @@ pub async fn execute(
                 title: rec["title"]
                     .as_str()
                     .unwrap_or("Recommendation")
-                    .to_string(),
-                content: rec["reason"].as_str().unwrap_or("").to_string(),
+                    .to_owned(),
+                content: rec["reason"].as_str().unwrap_or("").to_owned(),
                 metadata: Some(rec.clone()),
                 created_at: now.clone(),
             });
@@ -113,7 +113,7 @@ fn summarize_transactions(
         *by_category.entry(tx.category.to_string()).or_insert(0.0) += tx.amount;
     }
     let mut cats: Vec<_> = by_category.iter().collect();
-    cats.sort_by(|a, b| b.1.partial_cmp(a.1).unwrap());
+    cats.sort_by(|a, b| b.1.total_cmp(a.1));
     let top_cats: String = cats
         .iter()
         .take(5)

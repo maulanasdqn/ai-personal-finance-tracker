@@ -56,9 +56,9 @@ pub fn sanitize_file_name(name: &str) -> String {
         })
         .collect();
     if sanitized.is_empty() {
-        "upload".to_string()
+        "upload".to_owned()
     } else {
-        sanitized[..sanitized.len().min(200)].to_string()
+        sanitized[..sanitized.len().min(200)].to_owned()
     }
 }
 

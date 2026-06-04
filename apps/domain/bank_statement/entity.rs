@@ -56,6 +56,7 @@ impl std::str::FromStr for FileType {
 
 #[cfg(test)]
 mod file_type_tests {
+    #![allow(clippy::unwrap_used)]
     use wasm_bindgen_test::*;
     wasm_bindgen_test_configure!(run_in_node);
     use super::*;
