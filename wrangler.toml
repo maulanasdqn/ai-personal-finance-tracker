@@ -4,8 +4,8 @@ compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
 [build]
-command = "cargo install -q worker-build && worker-build --release"
-watch_dir = "src"
+command = "~/.cargo/bin/worker-build --release"
+watch_dir = "apps"
 
 [placement]
 mode = "smart"
@@ -13,10 +13,14 @@ mode = "smart"
 [observability]
 enabled = true
 
+[[routes]]
+pattern = "finance.msdqn.dev/*"
+zone_name = "msdqn.dev"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "ai-finance-tracker"
-database_id = "replace-with-your-d1-database-id"
+database_id = "d5ba95c3-20e8-4f8c-bbfe-b7bb337cd9a9"
 
 [[r2_buckets]]
 binding = "STORAGE"

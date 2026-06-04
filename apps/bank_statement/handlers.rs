@@ -4,7 +4,7 @@ use crate::domain::bank_statement::repository::BankStatementRepository;
 use crate::domain::workspace::repository::WorkspaceRepository;
 use crate::error::AppError;
 use crate::infrastructure::repository::{bank_statement::D1BankStatementRepository, workspace::D1WorkspaceRepository};
-use crate::presentation::{bank_statement::dto::BankStatementResponse, middleware::authenticate};
+use crate::{bank_statement::dto::BankStatementResponse, middleware::authenticate};
 use worker::{Request, Response, RouteContext};
 
 pub async fn list_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {

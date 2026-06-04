@@ -1,8 +1,8 @@
 use crate::application::auth::{dto::{LoginInput, RegisterInput}, login, register};
 use crate::application::validation::validate_password_strength;
 use crate::error::AppError;
-use crate::presentation::auth::dto::{AuthResponse, LoginRequest, RegisterRequest};
-use crate::presentation::guard;
+use crate::auth::dto::{AuthResponse, LoginRequest, RegisterRequest};
+use crate::guard;
 use worker::{Request, Response, RouteContext};
 
 pub async fn register_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {

@@ -41,6 +41,10 @@ pub async fn ui_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result
 
     let mut headers = Headers::new();
     headers.set("content-type", "text/html; charset=utf-8")?;
+    headers.set(
+        "Content-Security-Policy",
+        "default-src 'none'; script-src 'unsafe-inline' https://unpkg.com; style-src 'unsafe-inline' https://unpkg.com; img-src 'self' data:; connect-src 'self'; font-src https://unpkg.com; frame-ancestors 'none'",
+    )?;
     let resp = Response::ok(html)?;
     Ok(resp.with_headers(headers))
 }
