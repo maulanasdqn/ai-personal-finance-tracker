@@ -1,6 +1,7 @@
 use crate::application::bank_statement::use_cases::{dto::UploadInput, upload};
 use crate::application::validation::{sanitize_file_name, validate_file_upload};
 use crate::domain::bank_statement::repository::BankStatementRepository;
+use crate::domain::common::response::{ApiListResponse, ApiResponse, PaginationMeta};
 use crate::domain::workspace::repository::WorkspaceRepository;
 use crate::error::AppError;
 use crate::infrastructure::{
@@ -32,8 +33,9 @@ async fn handle_list(req: Request, ctx: RouteContext<()>) -> Result<Response, Ap
     let stmts = D1BankStatementRepository::new(ctx.env.d1("DB").map_err(AppError::from)?)
         .list_by_workspace(wid)
         .await?;
-    let resp: Vec<BankStatementResponse> = stmts.into_iter().map(Into::into).collect();
-    Response::from_json(&resp).map_err(AppError::from)
+    let data: Vec<BankStatementResponse> = stmts.into_iter().map(Into::into).collect();
+    let meta = PaginationMeta::unpaged(data.len() as u64);
+    Response::from_json(&ApiListResponse::new(data, meta, "ok")).map_err(AppError::from)
 }
 
 pub async fn upload_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -96,7 +98,11 @@ async fn handle_upload(mut req: Request, ctx: RouteContext<()>) -> Result<Respon
     )
     .await?;
 
-    Response::from_json(&BankStatementResponse::from(stmt)).map_err(AppError::from)
+    Response::from_json(&ApiResponse::new(
+        BankStatementResponse::from(stmt),
+        "uploaded successfully",
+    ))
+    .map_err(AppError::from)
 }
 
 pub async fn get_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -126,5 +132,6 @@ async fn handle_get(req: Request, ctx: RouteContext<()>) -> Result<Response, App
         .find_by_id(sid)
         .await?
         .ok_or_else(|| AppError::NotFound("statement not found".into()))?;
-    Response::from_json(&BankStatementResponse::from(stmt)).map_err(AppError::from)
+    Response::from_json(&ApiResponse::new(BankStatementResponse::from(stmt), "ok"))
+        .map_err(AppError::from)
 }

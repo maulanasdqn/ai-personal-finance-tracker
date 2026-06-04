@@ -3,6 +3,7 @@ use crate::application::workspace::use_cases::{
     dto::{CreateWorkspaceInput, InviteMemberInput},
     invite,
 };
+use crate::domain::common::response::{ApiListResponse, ApiResponse, PaginationMeta};
 use crate::domain::workspace::entity::WorkspacePatch;
 use crate::domain::workspace::repository::WorkspaceRepository;
 use crate::error::AppError;
@@ -41,8 +42,9 @@ async fn handle_list(req: Request, ctx: RouteContext<()>) -> Result<Response, Ap
     let user = auth!(req, ctx);
     let repo = workspace_repo!(ctx);
     let workspaces = repo.list_by_user(&user.user_id).await?;
-    let resp: Vec<WorkspaceResponse> = workspaces.into_iter().map(Into::into).collect();
-    Response::from_json(&resp).map_err(AppError::from)
+    let data: Vec<WorkspaceResponse> = workspaces.into_iter().map(Into::into).collect();
+    let meta = PaginationMeta::unpaged(data.len() as u64);
+    Response::from_json(&ApiListResponse::new(data, meta, "ok")).map_err(AppError::from)
 }
 
 pub async fn create_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -71,7 +73,11 @@ async fn handle_create(mut req: Request, ctx: RouteContext<()>) -> Result<Respon
         &repo,
     )
     .await?;
-    Response::from_json(&WorkspaceResponse::from(workspace)).map_err(AppError::from)
+    Response::from_json(&ApiResponse::new(
+        WorkspaceResponse::from(workspace),
+        "created successfully",
+    ))
+    .map_err(AppError::from)
 }
 
 pub async fn get_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -93,7 +99,8 @@ async fn handle_get(req: Request, ctx: RouteContext<()>) -> Result<Response, App
         .find_by_id(id)
         .await?
         .ok_or_else(|| AppError::NotFound("workspace not found".into()))?;
-    Response::from_json(&WorkspaceResponse::from(workspace)).map_err(AppError::from)
+    Response::from_json(&ApiResponse::new(WorkspaceResponse::from(workspace), "ok"))
+        .map_err(AppError::from)
 }
 
 pub async fn update_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -139,7 +146,11 @@ async fn handle_update(mut req: Request, ctx: RouteContext<()>) -> Result<Respon
             &now,
         )
         .await?;
-    Response::from_json(&WorkspaceResponse::from(workspace)).map_err(AppError::from)
+    Response::from_json(&ApiResponse::new(
+        WorkspaceResponse::from(workspace),
+        "updated successfully",
+    ))
+    .map_err(AppError::from)
 }
 
 pub async fn delete_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -162,7 +173,11 @@ async fn handle_delete(req: Request, ctx: RouteContext<()>) -> Result<Response, 
         return Err(AppError::Forbidden("only the owner can delete".into()));
     }
     repo.delete(id).await?;
-    Response::ok("deleted").map_err(AppError::from)
+    Response::from_json(&ApiResponse::new(
+        serde_json::Value::Null,
+        "deleted successfully",
+    ))
+    .map_err(AppError::from)
 }
 
 pub async fn invite_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -196,7 +211,11 @@ async fn handle_invite(mut req: Request, ctx: RouteContext<()>) -> Result<Respon
         &user_repo,
     )
     .await?;
-    Response::from_json(&MemberResponse::from(member)).map_err(AppError::from)
+    Response::from_json(&ApiResponse::new(
+        MemberResponse::from(member),
+        "member invited",
+    ))
+    .map_err(AppError::from)
 }
 
 pub async fn members_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -215,6 +234,7 @@ async fn handle_members(req: Request, ctx: RouteContext<()>) -> Result<Response,
         .await?
         .ok_or_else(|| AppError::Forbidden("not a member".into()))?;
     let members = repo.list_members(id).await?;
-    let resp: Vec<MemberResponse> = members.into_iter().map(Into::into).collect();
-    Response::from_json(&resp).map_err(AppError::from)
+    let data: Vec<MemberResponse> = members.into_iter().map(Into::into).collect();
+    let meta = PaginationMeta::unpaged(data.len() as u64);
+    Response::from_json(&ApiListResponse::new(data, meta, "ok")).map_err(AppError::from)
 }

@@ -1,5 +1,6 @@
 use crate::application::ai_insight::use_cases::{dto::GenerateInsightsInput, generate};
 use crate::domain::ai_insight::repository::AiInsightRepository;
+use crate::domain::common::response::{ApiListResponse, PaginationMeta};
 use crate::domain::workspace::repository::WorkspaceRepository;
 use crate::error::AppError;
 use crate::infrastructure::{
@@ -38,8 +39,9 @@ async fn handle_list(req: Request, ctx: RouteContext<()>) -> Result<Response, Ap
     let insights = D1AiInsightRepository::new(ctx.env.d1("DB").map_err(AppError::from)?)
         .list_by_workspace(wid, insight_type)
         .await?;
-    let resp: Vec<AiInsightResponse> = insights.into_iter().map(Into::into).collect();
-    Response::from_json(&resp).map_err(AppError::from)
+    let data: Vec<AiInsightResponse> = insights.into_iter().map(Into::into).collect();
+    let meta = PaginationMeta::unpaged(data.len() as u64);
+    Response::from_json(&ApiListResponse::new(data, meta, "ok")).map_err(AppError::from)
 }
 
 pub async fn generate_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -98,6 +100,8 @@ async fn handle_generate(mut req: Request, ctx: RouteContext<()>) -> Result<Resp
         &api_key,
     )
     .await?;
-    let resp: Vec<AiInsightResponse> = insights.into_iter().map(Into::into).collect();
-    Response::from_json(&resp).map_err(AppError::from)
+    let data: Vec<AiInsightResponse> = insights.into_iter().map(Into::into).collect();
+    let meta = PaginationMeta::unpaged(data.len() as u64);
+    Response::from_json(&ApiListResponse::new(data, meta, "insights generated"))
+        .map_err(AppError::from)
 }

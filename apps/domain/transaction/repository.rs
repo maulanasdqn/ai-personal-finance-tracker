@@ -1,6 +1,7 @@
 use crate::domain::transaction::entity::{NewTransaction, Transaction};
 use crate::error::AppError;
 
+#[derive(Clone)]
 pub struct TransactionFilter {
     pub workspace_id: String,
     pub category: Option<String>,
@@ -14,6 +15,7 @@ pub struct TransactionFilter {
 pub trait TransactionRepository {
     async fn create(&self, tx: NewTransaction) -> Result<Transaction, AppError>;
     async fn find_by_id(&self, id: &str) -> Result<Option<Transaction>, AppError>;
+    async fn count(&self, filter: &TransactionFilter) -> Result<u64, AppError>;
     async fn list(&self, filter: TransactionFilter) -> Result<Vec<Transaction>, AppError>;
     async fn delete(&self, id: &str) -> Result<(), AppError>;
 }

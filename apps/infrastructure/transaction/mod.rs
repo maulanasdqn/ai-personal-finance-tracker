@@ -120,6 +120,49 @@ impl TransactionRepository for D1TransactionRepository {
             .map(|r| r.map(Into::into))
     }
 
+    async fn count(&self, f: &TransactionFilter) -> Result<u64, AppError> {
+        #[derive(Deserialize)]
+        struct CountRow {
+            total: u64,
+        }
+
+        let mut parts: Vec<String> = vec!["workspace_id = ?1".to_owned()];
+        let mut bindings: Vec<JsValue> = vec![JsValue::from_str(&f.workspace_id)];
+
+        for (field, val) in [
+            ("category", f.category.as_deref()),
+            ("transaction_type", f.transaction_type.as_deref()),
+        ] {
+            if let Some(v) = val {
+                let n = bindings.len() + 1;
+                parts.push(format!("{field} = ?{n}"));
+                bindings.push(JsValue::from_str(v));
+            }
+        }
+        for (op, val) in [(">=", f.date_from.as_deref()), ("<=", f.date_to.as_deref())] {
+            if let Some(v) = val {
+                let n = bindings.len() + 1;
+                parts.push(format!("transaction_date {op} ?{n}"));
+                bindings.push(JsValue::from_str(v));
+            }
+        }
+
+        let sql = format!(
+            "SELECT COUNT(*) as total FROM transactions WHERE {}",
+            parts.join(" AND ")
+        );
+        let count = self
+            .db
+            .prepare(&sql)
+            .bind(&bindings)
+            .map_err(|_| AppError::Internal)?
+            .first::<CountRow>(None)
+            .await
+            .map_err(|_| AppError::Internal)?
+            .map_or(0, |r| r.total);
+        Ok(count)
+    }
+
     async fn list(&self, f: TransactionFilter) -> Result<Vec<Transaction>, AppError> {
         let query = Query::new()
             .eq("workspace_id", f.workspace_id)

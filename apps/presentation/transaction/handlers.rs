@@ -1,6 +1,7 @@
 use crate::application::transaction::use_cases::{
     create as create_uc, dto::CreateTransactionInput,
 };
+use crate::domain::common::response::{ApiListResponse, ApiResponse, PaginationMeta};
 use crate::domain::transaction::repository::{TransactionFilter, TransactionRepository};
 use crate::domain::workspace::repository::WorkspaceRepository;
 use crate::error::AppError;
@@ -42,21 +43,30 @@ async fn handle_list(req: Request, ctx: RouteContext<()>) -> Result<Response, Ap
     let _user = auth_member!(req, ctx, wid);
     let url = req.url().map_err(AppError::from)?;
     let params: std::collections::HashMap<_, _> = url.query_pairs().into_owned().collect();
+
+    let limit = params.get("limit").and_then(|v| v.parse::<u32>().ok());
+    let offset_val = params.get("offset").and_then(|v| v.parse::<u32>().ok());
+    let per_page = u64::from(limit.unwrap_or(50));
+    let offset_n = u64::from(offset_val.unwrap_or(0));
+    let page = offset_n / per_page.max(1) + 1;
+
+    let filter = TransactionFilter {
+        workspace_id: wid.to_string(),
+        category: params.get("category").cloned(),
+        transaction_type: params.get("type").cloned(),
+        date_from: params.get("from").cloned(),
+        date_to: params.get("to").cloned(),
+        limit,
+        offset: offset_val,
+    };
+
     let db = ctx.env.d1("DB").map_err(AppError::from)?;
     let repo = D1TransactionRepository::new(db);
-    let txs = repo
-        .list(TransactionFilter {
-            workspace_id: wid.to_string(),
-            category: params.get("category").cloned(),
-            transaction_type: params.get("type").cloned(),
-            date_from: params.get("from").cloned(),
-            date_to: params.get("to").cloned(),
-            limit: params.get("limit").and_then(|v| v.parse().ok()),
-            offset: params.get("offset").and_then(|v| v.parse().ok()),
-        })
-        .await?;
-    let resp: Vec<TransactionResponse> = txs.into_iter().map(Into::into).collect();
-    Response::from_json(&resp).map_err(AppError::from)
+    let total = repo.count(&filter).await?;
+    let txs = repo.list(filter).await?;
+    let data: Vec<TransactionResponse> = txs.into_iter().map(Into::into).collect();
+    let meta = PaginationMeta::new(page, per_page, total);
+    Response::from_json(&ApiListResponse::new(data, meta, "ok")).map_err(AppError::from)
 }
 
 pub async fn create_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -103,7 +113,11 @@ async fn handle_create(mut req: Request, ctx: RouteContext<()>) -> Result<Respon
         &repo,
     )
     .await?;
-    Response::from_json(&TransactionResponse::from(tx)).map_err(AppError::from)
+    Response::from_json(&ApiResponse::new(
+        TransactionResponse::from(tx),
+        "created successfully",
+    ))
+    .map_err(AppError::from)
 }
 
 pub async fn get_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -126,7 +140,8 @@ async fn handle_get(req: Request, ctx: RouteContext<()>) -> Result<Response, App
         .find_by_id(txid)
         .await?
         .ok_or_else(|| AppError::NotFound("transaction not found".into()))?;
-    Response::from_json(&TransactionResponse::from(tx)).map_err(AppError::from)
+    Response::from_json(&ApiResponse::new(TransactionResponse::from(tx), "ok"))
+        .map_err(AppError::from)
 }
 
 pub async fn delete_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -147,7 +162,11 @@ async fn handle_delete(req: Request, ctx: RouteContext<()>) -> Result<Response, 
     let db = ctx.env.d1("DB").map_err(AppError::from)?;
     let repo = D1TransactionRepository::new(db);
     repo.delete(&txid).await?;
-    Response::ok("deleted").map_err(AppError::from)
+    Response::from_json(&ApiResponse::new(
+        serde_json::Value::Null,
+        "deleted successfully",
+    ))
+    .map_err(AppError::from)
 }
 
 fn is_valid_date(s: &str) -> bool {

@@ -3,6 +3,7 @@ use crate::application::auth::{
     login, register,
 };
 use crate::application::validation::validate_password_strength;
+use crate::domain::common::response::ApiResponse;
 use crate::error::AppError;
 use crate::presentation::auth::dto::{AuthResponse, LoginRequest, RegisterRequest};
 use crate::presentation::guard;
@@ -41,13 +42,13 @@ async fn handle_register(mut req: Request, ctx: RouteContext<()>) -> Result<Resp
         &secret,
     )
     .await?;
-    Response::from_json(&AuthResponse {
+    let data = AuthResponse {
         token: out.token,
         user_id: out.user_id,
         email: out.email,
         full_name: out.full_name,
-    })
-    .map_err(AppError::from)
+    };
+    Response::from_json(&ApiResponse::new(data, "registered successfully")).map_err(AppError::from)
 }
 
 pub async fn login_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
@@ -81,11 +82,11 @@ async fn handle_login(mut req: Request, ctx: RouteContext<()>) -> Result<Respons
         &secret,
     )
     .await?;
-    Response::from_json(&AuthResponse {
+    let data = AuthResponse {
         token: out.token,
         user_id: out.user_id,
         email: out.email,
         full_name: out.full_name,
-    })
-    .map_err(AppError::from)
+    };
+    Response::from_json(&ApiResponse::new(data, "login successful")).map_err(AppError::from)
 }
