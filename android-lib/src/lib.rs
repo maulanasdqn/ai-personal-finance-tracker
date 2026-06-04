@@ -15,10 +15,7 @@ fn opt_jstr<'a>(env: &mut JNIEnv<'a>, s: JString<'a>) -> Option<String> {
 }
 
 fn out(env: &mut JNIEnv, result: Result<String, String>) -> jstring {
-    let s = match result {
-        Ok(v) => v,
-        Err(e) => format!(r#"{{"error":"{}"}}"#, e.replace('"', "\\\"")),
-    };
+    let s = result.unwrap_or_else(|e| e);
     env.new_string(s).unwrap().into_raw()
 }
 
