@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import dev.msdqn.finance.presentation.theme.ButtonPastel
 import dev.msdqn.finance.presentation.theme.CardWhite
 import dev.msdqn.finance.presentation.theme.MintBackground
+import dev.msdqn.finance.presentation.ui.ErrorBanner
 
 @Composable
 fun LoginScreen(
@@ -75,12 +76,9 @@ fun LoginScreen(
             shape = RoundedCornerShape(14.dp),
         )
 
-        uiState.error?.let {
-            Spacer(Modifier.height(8.dp))
-            Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
-        }
-
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(8.dp))
+        ErrorBanner(message = uiState.error)
+        Spacer(Modifier.height(16.dp))
         Button(
             onClick = { viewModel.login(email, password, onNavigateToHome) },
             modifier = Modifier.fillMaxWidth().height(52.dp),

@@ -34,6 +34,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import dev.msdqn.finance.presentation.theme.ButtonPastel
 import dev.msdqn.finance.presentation.theme.CardWhite
 import dev.msdqn.finance.presentation.theme.MintBackground
+import dev.msdqn.finance.presentation.ui.ErrorBanner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +65,7 @@ fun CreateWorkspaceScreen(onBack: () -> Unit, viewModel: CreateWorkspaceViewMode
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
             )
-            state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) }
+            ErrorBanner(message = state.error)
             Spacer(Modifier.height(8.dp))
             Button(
                 onClick = { viewModel.create(name, description.takeIf { it.isNotBlank() }) },

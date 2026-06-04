@@ -40,6 +40,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import dev.msdqn.finance.presentation.theme.ButtonPastel
 import dev.msdqn.finance.presentation.theme.CardWhite
 import dev.msdqn.finance.presentation.theme.DarkSurface
+import dev.msdqn.finance.presentation.ui.ErrorBanner
 import dev.msdqn.finance.presentation.theme.ExpenseRed
 import dev.msdqn.finance.presentation.theme.IncomeGreen
 import dev.msdqn.finance.presentation.theme.MintBackground
@@ -135,9 +136,7 @@ fun CreateTransactionScreen(onBack: () -> Unit, viewModel: CreateTransactionView
                 singleLine = true,
                 shape = RoundedCornerShape(14.dp),
             )
-            state.error?.let {
-                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
-            }
+            ErrorBanner(message = state.error)
         }
 
         Spacer(Modifier.weight(1f))
