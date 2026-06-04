@@ -16,10 +16,10 @@ import javax.inject.Inject
 
 data class HomeUiState(
     val isLoading: Boolean = false,
-    val fullName: String = "",
     val recentTransactions: List<Transaction> = emptyList(),
-    val totalIncome: Double = 0.0,
-    val totalExpense: Double = 0.0,
+    val totalBalance: Double = 0.0,
+    val todayChange: Double = 0.0,
+    val currency: String = "USD",
     val error: String? = null,
 )
 
@@ -38,12 +38,22 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = HomeUiState(isLoading = true)
             val token = session.token.first() ?: return@launch
-            val workspaceId = session.workspaceId.first() ?: return@launch
-            txRepo.listTransactions(token, workspaceId, limit = 5)
+            val workspaceId = session.workspaceId.first().takeIf { !it.isNullOrBlank() } ?: return@launch
+            txRepo.listTransactions(token, workspaceId, limit = 100)
                 .onSuccess { (txs, _) ->
                     val income = txs.filter { it.transactionType == "income" }.sumOf { it.amount }
                     val expense = txs.filter { it.transactionType == "expense" }.sumOf { it.amount }
-                    _uiState.value = HomeUiState(recentTransactions = txs, totalIncome = income, totalExpense = expense)
+                    val balance = income - expense
+                    val today = java.time.LocalDate.now().toString()
+                    val todayIncome = txs.filter { it.transactionType == "income" && it.transactionDate == today }.sumOf { it.amount }
+                    val todayExpense = txs.filter { it.transactionType == "expense" && it.transactionDate == today }.sumOf { it.amount }
+                    val currency = txs.firstOrNull()?.currency ?: "USD"
+                    _uiState.value = HomeUiState(
+                        recentTransactions = txs.take(5),
+                        totalBalance = balance,
+                        todayChange = todayIncome - todayExpense,
+                        currency = currency,
+                    )
                 }
                 .onFailure { _uiState.value = HomeUiState(error = it.message) }
         }

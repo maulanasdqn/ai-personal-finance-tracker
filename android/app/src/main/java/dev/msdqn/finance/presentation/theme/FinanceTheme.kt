@@ -5,25 +5,21 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val LightColorScheme = lightColorScheme(
-    primary = NavyPrimary,
+    primary = DarkSurface,
     onPrimary = CardWhite,
-    primaryContainer = Lavender100,
-    onPrimaryContainer = Navy900,
-    secondary = PinkAccent,
+    primaryContainer = YellowCard,
+    onPrimaryContainer = DarkSurface,
+    secondary = IncomeGreen,
     onSecondary = CardWhite,
-    secondaryContainer = PinkLight,
-    onSecondaryContainer = Navy900,
-    tertiary = NavyLight,
-    onTertiary = CardWhite,
-    background = WarmCream,
+    background = MintBackground,
     onBackground = TextPrimary,
     surface = CardWhite,
     onSurface = TextPrimary,
-    surfaceVariant = SurfaceVariant,
+    surfaceVariant = MintSurface,
     onSurfaceVariant = TextSecondary,
-    outline = TextSecondary,
     error = ExpenseRed,
     onError = CardWhite,
+    outline = TextMuted,
 )
 
 @Composable

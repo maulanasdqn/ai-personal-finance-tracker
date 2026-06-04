@@ -17,9 +17,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import dev.msdqn.finance.presentation.theme.WarmCream
+import dev.msdqn.finance.presentation.theme.MintBackground
+import dev.msdqn.finance.presentation.theme.TextSecondary
 
 @Composable
 fun SettingsScreen(onNavigateToLogin: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
@@ -27,21 +30,27 @@ fun SettingsScreen(onNavigateToLogin: () -> Unit, viewModel: SettingsViewModel =
     val fullName by viewModel.fullName.collectAsState()
 
     Column(
-        modifier = Modifier.fillMaxSize().background(WarmCream).padding(24.dp),
+        modifier = Modifier.fillMaxSize().background(MintBackground).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("Settings", style = MaterialTheme.typography.headlineMedium)
+        Text("Settings", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
-        fullName?.let { Text("Name: $it", style = MaterialTheme.typography.bodyLarge) }
-        email?.let { Text("Email: $it", style = MaterialTheme.typography.bodyLarge) }
+        fullName?.let {
+            Text("Name", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+            Text(it, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+        }
+        email?.let {
+            Text("Email", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+            Text(it, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+        }
         Spacer(Modifier.height(24.dp))
         Button(
             onClick = { viewModel.logout(onNavigateToLogin) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().height(52.dp),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(28.dp),
         ) {
-            Text("Sign Out")
+            Text("Sign Out", fontWeight = FontWeight.SemiBold)
         }
     }
 }

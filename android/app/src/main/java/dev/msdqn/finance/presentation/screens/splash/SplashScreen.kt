@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import dev.msdqn.finance.presentation.theme.NavyPrimary
-import dev.msdqn.finance.presentation.theme.WarmCream
+import dev.msdqn.finance.presentation.theme.DarkSurface
+import dev.msdqn.finance.presentation.theme.MintBackground
 
 @Composable
 fun SplashScreen(
@@ -33,12 +33,12 @@ fun SplashScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(WarmCream),
+        modifier = Modifier.fillMaxSize().background(MintBackground),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = "Finance",
-            color = NavyPrimary,
+            color = DarkSurface,
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
         )

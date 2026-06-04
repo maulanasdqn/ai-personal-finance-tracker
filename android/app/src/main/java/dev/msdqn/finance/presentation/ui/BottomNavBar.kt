@@ -17,18 +17,16 @@ import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import dev.msdqn.finance.presentation.nav.Routes
 import dev.msdqn.finance.presentation.theme.CardWhite
-import dev.msdqn.finance.presentation.theme.Lavender100
-import dev.msdqn.finance.presentation.theme.NavyPrimary
-import dev.msdqn.finance.presentation.theme.TextSecondary
+import dev.msdqn.finance.presentation.theme.NavBlack
 
 private data class NavItem(val route: String, val icon: ImageVector, val label: String)
 
@@ -46,16 +44,15 @@ fun BottomNavBar(
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
+    Box(
         modifier = modifier
             .navigationBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
-        shape = RoundedCornerShape(28.dp),
-        color = CardWhite,
-        shadowElevation = 20.dp,
+            .padding(horizontal = 24.dp, vertical = 16.dp)
+            .clip(RoundedCornerShape(40.dp))
+            .background(NavBlack)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -64,7 +61,7 @@ fun BottomNavBar(
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(if (selected) Lavender100 else CardWhite)
+                        .background(if (selected) CardWhite.copy(alpha = 0.15f) else Color.Transparent)
                         .clickable { onNavigate(item.route) }
                         .padding(12.dp),
                     contentAlignment = Alignment.Center,
@@ -72,8 +69,8 @@ fun BottomNavBar(
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.label,
-                        modifier = Modifier.size(24.dp),
-                        tint = if (selected) NavyPrimary else TextSecondary,
+                        modifier = Modifier.size(22.dp),
+                        tint = if (selected) CardWhite else CardWhite.copy(alpha = 0.5f),
                     )
                 }
             }
