@@ -46,7 +46,7 @@ pub async fn analyze_text(prompt: &str, api_key: &str) -> Result<String, AppErro
 }
 
 pub async fn analyze_image(base64_data: &str, media_type: &str, prompt: &str, api_key: &str) -> Result<String, AppError> {
-    let data_url = format!("data:{};base64,{}", media_type, base64_data);
+    let data_url = format!("data:{media_type};base64,{base64_data}");
     let body = ChatRequest {
         model: MODEL,
         max_tokens: 4096,
@@ -82,7 +82,7 @@ async fn call_api(body: ChatRequest, api_key: &str) -> Result<String, AppError> 
     let body_str = serde_json::to_string(&body)?;
     let mut headers = worker::Headers::new();
     headers.set("content-type", "application/json").map_err(|_| AppError::Internal)?;
-    headers.set("authorization", &format!("Bearer {}", api_key)).map_err(|_| AppError::Internal)?;
+    headers.set("authorization", &format!("Bearer {api_key}")).map_err(|_| AppError::Internal)?;
     let req = worker::Request::new_with_init(
         API_URL,
         worker::RequestInit::new()
@@ -92,7 +92,7 @@ async fn call_api(body: ChatRequest, api_key: &str) -> Result<String, AppError> 
     )
     .map_err(|_| AppError::Internal)?;
 
-    let mut resp = Fetch::Request(req.into())
+    let mut resp = Fetch::Request(req)
         .send()
         .await
         .map_err(|_| AppError::Internal)?;
@@ -107,5 +107,5 @@ async fn call_api(body: ChatRequest, api_key: &str) -> Result<String, AppError> 
         .into_iter()
         .next()
         .map(|c| c.message.content)
-        .ok_or_else(|| AppError::Internal)
+        .ok_or(AppError::Internal)
 }

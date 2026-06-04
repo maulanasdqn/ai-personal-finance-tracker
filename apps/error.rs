@@ -29,8 +29,10 @@ impl AppError {
             Self::Internal => (500, "internal server error".to_string()),
         };
         Response::from_json(&ErrorBody { message })
-            .map(|r| r.with_status(status))
-            .unwrap_or_else(|_| Response::error("internal server error", 500).unwrap())
+            .map_or_else(
+                |_| Response::error("internal server error", 500).unwrap(),
+                |r| r.with_status(status),
+            )
     }
 }
 

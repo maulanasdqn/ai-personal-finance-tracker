@@ -24,8 +24,7 @@ pub fn limit_body(req: &Request) -> Result<(), AppError> {
         if let Ok(size) = cl.parse::<usize>() {
             if size > MAX_JSON_BODY {
                 return Err(AppError::BadRequest(format!(
-                    "request body too large (max {} bytes)",
-                    MAX_JSON_BODY
+                    "request body too large (max {MAX_JSON_BODY} bytes)"
                 )));
             }
         }

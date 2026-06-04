@@ -6,7 +6,7 @@ use crate::presentation::guard;
 use worker::{Request, Response, RouteContext};
 
 pub async fn register_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-    handle_register(req, ctx).await.map(Ok).unwrap_or_else(|e| Ok(e.into_response()))
+    handle_register(req, ctx).await.map_or_else(|e| Ok(e.into_response()), Ok)
 }
 
 async fn handle_register(mut req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {
@@ -25,7 +25,7 @@ async fn handle_register(mut req: Request, ctx: RouteContext<()>) -> Result<Resp
 }
 
 pub async fn login_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-    handle_login(req, ctx).await.map(Ok).unwrap_or_else(|e| Ok(e.into_response()))
+    handle_login(req, ctx).await.map_or_else(|e| Ok(e.into_response()), Ok)
 }
 
 async fn handle_login(mut req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {

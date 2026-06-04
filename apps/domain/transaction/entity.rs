@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum TransactionCategory {
     Food,
     Transport,
@@ -28,7 +28,7 @@ impl std::fmt::Display for TransactionCategory {
             Self::Investment => "Investment",
             Self::Other => "Other",
         };
-        write!(f, "{}", s)
+        write!(f, "{s}")
     }
 }
 
@@ -46,12 +46,13 @@ impl std::str::FromStr for TransactionCategory {
             "Salary" => Ok(Self::Salary),
             "Investment" => Ok(Self::Investment),
             "Other" => Ok(Self::Other),
-            _ => Err(format!("unknown category: {}", s)),
+            _ => Err(format!("unknown category: {s}")),
         }
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(clippy::struct_field_names)]
 pub struct Transaction {
     pub id: String,
     pub workspace_id: String,
@@ -68,6 +69,7 @@ pub struct Transaction {
 }
 
 #[derive(Debug)]
+#[allow(clippy::struct_field_names)]
 pub struct NewTransaction {
     pub id: String,
     pub workspace_id: String,
@@ -83,7 +85,7 @@ pub struct NewTransaction {
     pub updated_at: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum TransactionType {
     Income,
@@ -105,12 +107,12 @@ impl std::str::FromStr for TransactionType {
         match s {
             "income" => Ok(Self::Income),
             "expense" => Ok(Self::Expense),
-            _ => Err(format!("unknown type: {}", s)),
+            _ => Err(format!("unknown type: {s}")),
         }
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum TransactionSource {
     Manual,
@@ -132,7 +134,7 @@ impl std::str::FromStr for TransactionSource {
         match s {
             "manual" => Ok(Self::Manual),
             "imported" => Ok(Self::Imported),
-            _ => Err(format!("unknown source: {}", s)),
+            _ => Err(format!("unknown source: {s}")),
         }
     }
 }

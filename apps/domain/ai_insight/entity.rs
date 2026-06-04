@@ -22,7 +22,7 @@ pub struct NewAiInsight {
     pub created_at: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum InsightType {
     Tip,
@@ -50,7 +50,7 @@ impl std::str::FromStr for InsightType {
             "reduction" => Ok(Self::Reduction),
             "recommendation" => Ok(Self::Recommendation),
             "analysis" => Ok(Self::Analysis),
-            _ => Err(format!("unknown insight type: {}", s)),
+            _ => Err(format!("unknown insight type: {s}")),
         }
     }
 }

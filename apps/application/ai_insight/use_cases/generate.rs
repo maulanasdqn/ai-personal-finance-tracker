@@ -22,7 +22,7 @@ pub async fn execute(input: GenerateInsightsInput, tx_repo: &impl TransactionRep
     }
 
     let summary = summarize_transactions(&transactions);
-    let prompt = format!("{}{}", ai::FINANCIAL_TIPS_PROMPT, summary);
+    let prompt = format!("{}{summary}", ai::FINANCIAL_TIPS_PROMPT);
     let ai_response = ai::deepseek::analyze_text(&prompt, api_key).await?;
 
     let parsed: serde_json::Value = serde_json::from_str(&ai_response)
@@ -51,7 +51,7 @@ pub async fn execute(input: GenerateInsightsInput, tx_repo: &impl TransactionRep
                 id: Uuid::new_v4().to_string(),
                 workspace_id: input.workspace_id.clone(),
                 insight_type: InsightType::Reduction,
-                title: format!("Reduce {} spending", item["category"].as_str().unwrap_or("")),
+                title: { let cat = item["category"].as_str().unwrap_or(""); format!("Reduce {cat} spending") },
                 content: item["advice"].as_str().unwrap_or("").to_string(),
                 metadata: Some(item.clone()),
                 created_at: now.clone(),
@@ -85,6 +85,8 @@ fn summarize_transactions(transactions: &[crate::domain::transaction::entity::Tr
     }
     let mut cats: Vec<_> = by_category.iter().collect();
     cats.sort_by(|a, b| b.1.partial_cmp(a.1).unwrap());
-    let top_cats: String = cats.iter().take(5).map(|(k, v)| format!("{}: {:.0}", k, v)).collect::<Vec<_>>().join(", ");
-    format!("Total income: {:.0}, Total expenses: {:.0}, Net: {:.0}. Top categories: {}. Transaction count: {}", total_income, total_expense, total_income - total_expense, top_cats, transactions.len())
+    let top_cats: String = cats.iter().take(5).map(|(k, v)| format!("{k}: {v:.0}")).collect::<Vec<_>>().join(", ");
+    let net = total_income - total_expense;
+    let count = transactions.len();
+    format!("Total income: {total_income:.0}, Total expenses: {total_expense:.0}, Net: {net:.0}. Top categories: {top_cats}. Transaction count: {count}")
 }

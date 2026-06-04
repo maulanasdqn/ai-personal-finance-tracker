@@ -8,7 +8,7 @@ use crate::presentation::{bank_statement::dto::BankStatementResponse, middleware
 use worker::{Request, Response, RouteContext};
 
 pub async fn list_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-    handle_list(req, ctx).await.map(Ok).unwrap_or_else(|e| Ok(e.into_response()))
+    handle_list(req, ctx).await.map_or_else(|e| Ok(e.into_response()), Ok)
 }
 
 async fn handle_list(req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {
@@ -22,7 +22,7 @@ async fn handle_list(req: Request, ctx: RouteContext<()>) -> Result<Response, Ap
 }
 
 pub async fn upload_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-    handle_upload(req, ctx).await.map(Ok).unwrap_or_else(|e| Ok(e.into_response()))
+    handle_upload(req, ctx).await.map_or_else(|e| Ok(e.into_response()), Ok)
 }
 
 async fn handle_upload(mut req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {
@@ -56,7 +56,7 @@ async fn handle_upload(mut req: Request, ctx: RouteContext<()>) -> Result<Respon
 }
 
 pub async fn get_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-    handle_get(req, ctx).await.map(Ok).unwrap_or_else(|e| Ok(e.into_response()))
+    handle_get(req, ctx).await.map_or_else(|e| Ok(e.into_response()), Ok)
 }
 
 async fn handle_get(req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {

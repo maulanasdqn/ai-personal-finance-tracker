@@ -62,7 +62,7 @@ impl std::str::FromStr for ProcessingStatus {
             "processing" => Ok(Self::Processing),
             "processed" => Ok(Self::Processed),
             "failed" => Ok(Self::Failed),
-            _ => Err(format!("unknown status: {}", s)),
+            _ => Err(format!("unknown status: {s}")),
         }
     }
 }

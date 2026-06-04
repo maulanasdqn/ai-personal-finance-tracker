@@ -1,3 +1,12 @@
+#![deny(clippy::all, clippy::pedantic, clippy::nursery)]
+#![allow(
+    clippy::future_not_send,      // WASM is single-threaded
+    clippy::missing_errors_doc,   // no public doc comments
+    clippy::implicit_clone,       // worker-rs types deref to String in some places
+    clippy::missing_const_for_fn, // wasm-bindgen types are not const-compatible
+    clippy::module_name_repetitions,
+)]
+
 use worker::{event, Context, Env, Method, Request, Response, Router};
 
 mod application;

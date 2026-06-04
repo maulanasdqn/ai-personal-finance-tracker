@@ -3,7 +3,8 @@ use crate::domain::transaction::repository::{TransactionFilter, TransactionRepos
 use crate::domain::workspace::repository::WorkspaceRepository;
 use crate::error::AppError;
 use crate::infrastructure::{transaction::D1TransactionRepository, workspace::D1WorkspaceRepository};
-use crate::presentation::{guard, middleware::authenticate, transaction::dto::*};
+use crate::presentation::transaction::dto::{CreateTransactionRequest, TransactionResponse};
+use crate::presentation::{guard, middleware::authenticate};
 use worker::{Request, Response, RouteContext};
 
 macro_rules! auth_member {
@@ -18,7 +19,7 @@ macro_rules! auth_member {
 }
 
 pub async fn list_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-    handle_list(req, ctx).await.map(Ok).unwrap_or_else(|e| Ok(e.into_response()))
+    handle_list(req, ctx).await.map_or_else(|e| Ok(e.into_response()), Ok)
 }
 
 async fn handle_list(req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {
@@ -42,7 +43,7 @@ async fn handle_list(req: Request, ctx: RouteContext<()>) -> Result<Response, Ap
 }
 
 pub async fn create_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-    handle_create(req, ctx).await.map(Ok).unwrap_or_else(|e| Ok(e.into_response()))
+    handle_create(req, ctx).await.map_or_else(|e| Ok(e.into_response()), Ok)
 }
 
 async fn handle_create(mut req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {
@@ -69,7 +70,7 @@ async fn handle_create(mut req: Request, ctx: RouteContext<()>) -> Result<Respon
 }
 
 pub async fn get_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-    handle_get(req, ctx).await.map(Ok).unwrap_or_else(|e| Ok(e.into_response()))
+    handle_get(req, ctx).await.map_or_else(|e| Ok(e.into_response()), Ok)
 }
 
 async fn handle_get(req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {
@@ -83,7 +84,7 @@ async fn handle_get(req: Request, ctx: RouteContext<()>) -> Result<Response, App
 }
 
 pub async fn delete_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-    handle_delete(req, ctx).await.map(Ok).unwrap_or_else(|e| Ok(e.into_response()))
+    handle_delete(req, ctx).await.map_or_else(|e| Ok(e.into_response()), Ok)
 }
 
 async fn handle_delete(req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {

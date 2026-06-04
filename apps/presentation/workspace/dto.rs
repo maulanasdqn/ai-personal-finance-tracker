@@ -9,6 +9,7 @@ pub struct CreateWorkspaceRequest {
 }
 
 #[derive(Deserialize)]
+#[allow(clippy::option_option)]
 pub struct UpdateWorkspaceRequest {
     pub name: Option<String>,
     pub description: Option<Option<String>>,

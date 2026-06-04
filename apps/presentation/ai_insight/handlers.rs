@@ -3,13 +3,14 @@ use crate::domain::ai_insight::repository::AiInsightRepository;
 use crate::domain::workspace::repository::WorkspaceRepository;
 use crate::error::AppError;
 use crate::infrastructure::{ai_insight::D1AiInsightRepository, transaction::D1TransactionRepository, workspace::D1WorkspaceRepository};
-use crate::presentation::{ai_insight::dto::*, guard, middleware::authenticate};
+use crate::presentation::ai_insight::dto::{AiInsightResponse, GenerateInsightsRequest};
+use crate::presentation::{guard, middleware::authenticate};
 use worker::{Request, Response, RouteContext};
 
 const AI_COOLDOWN_SECS: i64 = 300;
 
 pub async fn list_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-    handle_list(req, ctx).await.map(Ok).unwrap_or_else(|e| Ok(e.into_response()))
+    handle_list(req, ctx).await.map_or_else(|e| Ok(e.into_response()), Ok)
 }
 
 async fn handle_list(req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {
@@ -26,7 +27,7 @@ async fn handle_list(req: Request, ctx: RouteContext<()>) -> Result<Response, Ap
 }
 
 pub async fn generate_handler(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-    handle_generate(req, ctx).await.map(Ok).unwrap_or_else(|e| Ok(e.into_response()))
+    handle_generate(req, ctx).await.map_or_else(|e| Ok(e.into_response()), Ok)
 }
 
 async fn handle_generate(mut req: Request, ctx: RouteContext<()>) -> Result<Response, AppError> {

@@ -1,7 +1,7 @@
 use super::spec::OPENAPI_SPEC;
 use worker::{Headers, Request, Response, RouteContext};
 
-pub async fn spec_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Response> {
+pub fn spec_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Response> {
     let mut headers = Headers::new();
     headers.set("content-type", "application/json")?;
     headers.set("access-control-allow-origin", "*")?;
@@ -9,7 +9,7 @@ pub async fn spec_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Resu
     Ok(resp.with_headers(headers))
 }
 
-pub async fn ui_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Response> {
+pub fn ui_handler(_req: Request, _ctx: RouteContext<()>) -> worker::Result<Response> {
     let html = r##"<!DOCTYPE html>
 <html lang="en">
 <head>

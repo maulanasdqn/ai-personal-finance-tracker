@@ -11,7 +11,7 @@ pub async fn execute(input: UploadInput, repo: &impl BankStatementRepository, bu
     let file_type = detect_file_type(&input.content_type);
     let now = chrono::Utc::now().to_rfc3339();
     let id = Uuid::new_v4().to_string();
-    let file_key = format!("statements/{}/{}", input.workspace_id, id);
+    let file_key = format!("statements/{}/{id}", input.workspace_id);
 
     r2::upload(bucket, &file_key, input.file_data.clone(), &input.content_type).await?;
 
@@ -35,7 +35,7 @@ pub async fn execute(input: UploadInput, repo: &impl BankStatementRepository, bu
         Ok(response) => {
             let parsed: serde_json::Value = serde_json::from_str(&response)
                 .unwrap_or(serde_json::Value::Array(vec![]));
-            let summary_prompt = format!("In 2-3 sentences, summarize this bank statement data: {}", response);
+            let summary_prompt = format!("In 2-3 sentences, summarize this bank statement data: {response}");
             let summary = ai::deepseek::analyze_text(&summary_prompt, api_key).await.ok();
             repo.update_status(&id, ProcessingStatus::Processed, Some(parsed), summary, &now).await
         }
@@ -43,7 +43,7 @@ pub async fn execute(input: UploadInput, repo: &impl BankStatementRepository, bu
     }
 }
 
-pub(crate) fn detect_file_type(content_type: &str) -> FileType {
+fn detect_file_type(content_type: &str) -> FileType {
     if content_type.contains("pdf") { FileType::Pdf } else { FileType::Image }
 }
 

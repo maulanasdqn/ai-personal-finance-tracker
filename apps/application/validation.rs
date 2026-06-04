@@ -26,17 +26,16 @@ pub fn validate_file_upload(bytes: &[u8], content_type: &str) -> Result<(), AppE
         return Err(AppError::BadRequest("file body is empty".into()));
     }
     if bytes.len() > MAX_FILE_SIZE {
+        let size = bytes.len();
         return Err(AppError::BadRequest(format!(
-            "file size exceeds the 10 MB limit (received {} bytes)",
-            bytes.len()
+            "file size exceeds the 10 MB limit (received {size} bytes)"
         )));
     }
     let base_type = content_type.split(';').next().unwrap_or("").trim();
     if !ALLOWED_CONTENT_TYPES.contains(&base_type) {
+        let allowed = ALLOWED_CONTENT_TYPES.join(", ");
         return Err(AppError::BadRequest(format!(
-            "unsupported file type '{}'. Allowed: {}",
-            base_type,
-            ALLOWED_CONTENT_TYPES.join(", ")
+            "unsupported file type '{base_type}'. Allowed: {allowed}"
         )));
     }
     Ok(())

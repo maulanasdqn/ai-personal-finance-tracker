@@ -21,6 +21,7 @@ pub struct NewWorkspace {
 }
 
 #[derive(Debug, Default)]
+#[allow(clippy::option_option)]
 pub struct WorkspacePatch {
     pub name: Option<String>,
     pub description: Option<Option<String>>,
@@ -34,7 +35,7 @@ pub struct WorkspaceMember {
     pub joined_at: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum MemberRole {
     Owner,
@@ -59,7 +60,7 @@ impl std::str::FromStr for MemberRole {
             "owner" => Ok(Self::Owner),
             "admin" => Ok(Self::Admin),
             "member" => Ok(Self::Member),
-            _ => Err(format!("unknown role: {}", s)),
+            _ => Err(format!("unknown role: {s}")),
         }
     }
 }

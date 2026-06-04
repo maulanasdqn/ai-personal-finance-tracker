@@ -27,7 +27,7 @@ pub struct NewBankStatement {
     pub updated_at: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum FileType {
     Pdf,
@@ -49,7 +49,7 @@ impl std::str::FromStr for FileType {
         match s {
             "pdf" => Ok(Self::Pdf),
             "image" => Ok(Self::Image),
-            _ => Err(format!("unknown file type: {}", s)),
+            _ => Err(format!("unknown file type: {s}")),
         }
     }
 }
@@ -87,7 +87,7 @@ mod file_type_tests {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum ProcessingStatus {
     Pending,
