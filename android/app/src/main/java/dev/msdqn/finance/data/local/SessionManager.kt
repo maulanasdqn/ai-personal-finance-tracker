@@ -13,7 +13,7 @@ import javax.inject.Singleton
 class SessionManager @Inject constructor(private val dataStore: DataStore<Preferences>) {
 
     companion object {
-        const val DEFAULT_BASE_URL = "https://finance.msdqn.dev/api/v1"
+        const val DEFAULT_BASE_URL = "https://finance.msdqn.dev"
     }
 
     private val TOKEN_KEY = stringPreferencesKey("auth_token")
