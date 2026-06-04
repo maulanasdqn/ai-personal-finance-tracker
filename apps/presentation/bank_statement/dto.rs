@@ -17,10 +17,16 @@ pub struct BankStatementResponse {
 impl From<crate::domain::bank_statement::entity::BankStatement> for BankStatementResponse {
     fn from(s: crate::domain::bank_statement::entity::BankStatement) -> Self {
         Self {
-            id: s.id, workspace_id: s.workspace_id, file_name: s.file_name,
-            file_type: s.file_type.to_string(), status: s.status.to_string(),
-            parsed_transactions: s.parsed_transactions, ai_summary: s.ai_summary,
-            created_by: s.created_by, created_at: s.created_at, updated_at: s.updated_at,
+            id: s.id,
+            workspace_id: s.workspace_id,
+            file_name: s.file_name,
+            file_type: s.file_type.to_string(),
+            status: s.status.to_string(),
+            parsed_transactions: s.parsed_transactions,
+            ai_summary: s.ai_summary,
+            created_by: s.created_by,
+            created_at: s.created_at,
+            updated_at: s.updated_at,
         }
     }
 }

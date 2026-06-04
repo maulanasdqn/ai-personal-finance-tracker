@@ -16,12 +16,9 @@ mod infrastructure;
 mod presentation;
 
 use presentation::{
-    ai_insight::routes as insight_routes,
-    auth::routes as auth_routes,
-    bank_statement::routes as stmt_routes,
-    docs::routes as docs_routes,
-    security::apply_security_headers,
-    transaction::routes as tx_routes,
+    ai_insight::routes as insight_routes, auth::routes as auth_routes,
+    bank_statement::routes as stmt_routes, docs::routes as docs_routes,
+    security::apply_security_headers, transaction::routes as tx_routes,
     workspace::routes as ws_routes,
 };
 
@@ -29,8 +26,14 @@ fn cors_preflight() -> worker::Result<Response> {
     let mut resp = Response::empty()?;
     let headers = resp.headers_mut();
     let _ = headers.set("Access-Control-Allow-Origin", "*");
-    let _ = headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-    let _ = headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    let _ = headers.set(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    );
+    let _ = headers.set(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization",
+    );
     let _ = headers.set("Access-Control-Max-Age", "86400");
     Ok(resp.with_status(204))
 }
@@ -50,10 +53,9 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> worker::Result<Respo
     let router = stmt_routes::register(router);
     let router = insight_routes::register(router);
     let router = docs_routes::register(router);
-    let router = router.get_async("/", |_, _| async move { Response::ok("AI Finance Tracker API — docs at /api/docs") });
+    let router = router.get_async("/", |_, _| async move {
+        Response::ok("AI Finance Tracker API — docs at /api/docs")
+    });
 
-    router
-        .run(req, env)
-        .await
-        .map(apply_security_headers)
+    router.run(req, env).await.map(apply_security_headers)
 }

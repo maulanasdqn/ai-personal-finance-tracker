@@ -30,10 +30,18 @@ pub struct TransactionResponse {
 impl From<crate::domain::transaction::entity::Transaction> for TransactionResponse {
     fn from(t: crate::domain::transaction::entity::Transaction) -> Self {
         Self {
-            id: t.id, workspace_id: t.workspace_id, amount: t.amount, currency: t.currency,
-            category: t.category.to_string(), description: t.description, transaction_date: t.transaction_date,
-            transaction_type: t.transaction_type.to_string(), source: t.source.to_string(),
-            created_by: t.created_by, created_at: t.created_at, updated_at: t.updated_at,
+            id: t.id,
+            workspace_id: t.workspace_id,
+            amount: t.amount,
+            currency: t.currency,
+            category: t.category.to_string(),
+            description: t.description,
+            transaction_date: t.transaction_date,
+            transaction_type: t.transaction_type.to_string(),
+            source: t.source.to_string(),
+            created_by: t.created_by,
+            created_at: t.created_at,
+            updated_at: t.updated_at,
         }
     }
 }
@@ -53,7 +61,8 @@ mod tests {
         assert!(parse(serde_json::json!({
             "amount": 100.0, "category": "Food",
             "transaction_date": "2024-01-15", "transaction_type": "expense"
-        })).is_ok());
+        }))
+        .is_ok());
     }
 
     #[wasm_bindgen_test]
@@ -61,7 +70,8 @@ mod tests {
         assert!(parse(serde_json::json!({
             "amount": 50.0, "category": "InvalidCategory",
             "transaction_date": "2024-01-15", "transaction_type": "expense"
-        })).is_err());
+        }))
+        .is_err());
     }
 
     #[wasm_bindgen_test]
@@ -69,6 +79,7 @@ mod tests {
         assert!(parse(serde_json::json!({
             "amount": 50.0, "category": "Food",
             "transaction_date": "2024-01-15", "transaction_type": "transfer"
-        })).is_err());
+        }))
+        .is_err());
     }
 }

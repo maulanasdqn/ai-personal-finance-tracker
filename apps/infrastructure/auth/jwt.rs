@@ -11,7 +11,10 @@ pub struct AuthClaims {
 pub fn generate_token(user_id: &str, email: &str, secret: &str) -> Result<String, AppError> {
     let key = HS256Key::from_bytes(secret.as_bytes());
     let claims = Claims::with_custom_claims(
-        AuthClaims { user_id: user_id.to_string(), email: email.to_string() },
+        AuthClaims {
+            user_id: user_id.to_string(),
+            email: email.to_string(),
+        },
         Duration::from_hours(24),
     );
     key.authenticate(claims).map_err(|_| AppError::Internal)

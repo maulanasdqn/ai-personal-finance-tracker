@@ -1,19 +1,32 @@
 use super::dto::UploadInput;
-use crate::domain::bank_statement::entity::{BankStatement, FileType, NewBankStatement, ProcessingStatus};
+use crate::domain::bank_statement::entity::{
+    BankStatement, FileType, NewBankStatement, ProcessingStatus,
+};
 use crate::domain::bank_statement::repository::BankStatementRepository;
 use crate::error::AppError;
 use crate::infrastructure::{ai, storage::r2};
-use worker::Bucket;
 use base64::{engine::general_purpose::STANDARD, Engine};
 use uuid::Uuid;
+use worker::Bucket;
 
-pub async fn execute(input: UploadInput, repo: &impl BankStatementRepository, bucket: &Bucket, api_key: &str) -> Result<BankStatement, AppError> {
+pub async fn execute(
+    input: UploadInput,
+    repo: &impl BankStatementRepository,
+    bucket: &Bucket,
+    api_key: &str,
+) -> Result<BankStatement, AppError> {
     let file_type = detect_file_type(&input.content_type);
     let now = chrono::Utc::now().to_rfc3339();
     let id = Uuid::new_v4().to_string();
     let file_key = format!("statements/{}/{id}", input.workspace_id);
 
-    r2::upload(bucket, &file_key, input.file_data.clone(), &input.content_type).await?;
+    r2::upload(
+        bucket,
+        &file_key,
+        input.file_data.clone(),
+        &input.content_type,
+    )
+    .await?;
 
     repo.create(NewBankStatement {
         id: id.clone(),
@@ -24,27 +37,52 @@ pub async fn execute(input: UploadInput, repo: &impl BankStatementRepository, bu
         created_by: input.created_by,
         created_at: now.clone(),
         updated_at: now.clone(),
-    }).await?;
+    })
+    .await?;
 
-    repo.update_status(&id, ProcessingStatus::Processing, None, None, &now).await?;
+    repo.update_status(&id, ProcessingStatus::Processing, None, None, &now)
+        .await?;
 
     let b64 = STANDARD.encode(&input.file_data);
-    let ai_result = ai::deepseek::analyze_image(&b64, &input.content_type, ai::BANK_STATEMENT_PROMPT, api_key).await;
+    let ai_result = ai::deepseek::analyze_image(
+        &b64,
+        &input.content_type,
+        ai::BANK_STATEMENT_PROMPT,
+        api_key,
+    )
+    .await;
 
     match ai_result {
         Ok(response) => {
-            let parsed: serde_json::Value = serde_json::from_str(&response)
-                .unwrap_or(serde_json::Value::Array(vec![]));
-            let summary_prompt = format!("In 2-3 sentences, summarize this bank statement data: {response}");
-            let summary = ai::deepseek::analyze_text(&summary_prompt, api_key).await.ok();
-            repo.update_status(&id, ProcessingStatus::Processed, Some(parsed), summary, &now).await
+            let parsed: serde_json::Value =
+                serde_json::from_str(&response).unwrap_or(serde_json::Value::Array(vec![]));
+            let summary_prompt =
+                format!("In 2-3 sentences, summarize this bank statement data: {response}");
+            let summary = ai::deepseek::analyze_text(&summary_prompt, api_key)
+                .await
+                .ok();
+            repo.update_status(
+                &id,
+                ProcessingStatus::Processed,
+                Some(parsed),
+                summary,
+                &now,
+            )
+            .await
         }
-        Err(_) => repo.update_status(&id, ProcessingStatus::Failed, None, None, &now).await,
+        Err(_) => {
+            repo.update_status(&id, ProcessingStatus::Failed, None, None, &now)
+                .await
+        }
     }
 }
 
 fn detect_file_type(content_type: &str) -> FileType {
-    if content_type.contains("pdf") { FileType::Pdf } else { FileType::Image }
+    if content_type.contains("pdf") {
+        FileType::Pdf
+    } else {
+        FileType::Image
+    }
 }
 
 #[cfg(test)]

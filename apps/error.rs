@@ -28,11 +28,10 @@ impl AppError {
             Self::TooManyRequests(m) => (429, m),
             Self::Internal => (500, "internal server error".to_string()),
         };
-        Response::from_json(&ErrorBody { message })
-            .map_or_else(
-                |_| Response::error("internal server error", 500).unwrap(),
-                |r| r.with_status(status),
-            )
+        Response::from_json(&ErrorBody { message }).map_or_else(
+            |_| Response::error("internal server error", 500).unwrap(),
+            |r| r.with_status(status),
+        )
     }
 }
 

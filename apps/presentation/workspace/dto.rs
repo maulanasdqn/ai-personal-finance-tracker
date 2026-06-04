@@ -41,13 +41,25 @@ pub struct MemberResponse {
 
 impl From<crate::domain::workspace::entity::Workspace> for WorkspaceResponse {
     fn from(w: crate::domain::workspace::entity::Workspace) -> Self {
-        Self { id: w.id, name: w.name, description: w.description, owner_id: w.owner_id, created_at: w.created_at, updated_at: w.updated_at }
+        Self {
+            id: w.id,
+            name: w.name,
+            description: w.description,
+            owner_id: w.owner_id,
+            created_at: w.created_at,
+            updated_at: w.updated_at,
+        }
     }
 }
 
 impl From<crate::domain::workspace::entity::WorkspaceMember> for MemberResponse {
     fn from(m: crate::domain::workspace::entity::WorkspaceMember) -> Self {
-        Self { workspace_id: m.workspace_id, user_id: m.user_id, role: m.role.to_string(), joined_at: m.joined_at }
+        Self {
+            workspace_id: m.workspace_id,
+            user_id: m.user_id,
+            role: m.role.to_string(),
+            joined_at: m.joined_at,
+        }
     }
 }
 

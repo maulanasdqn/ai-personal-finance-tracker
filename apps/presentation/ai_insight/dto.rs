@@ -22,7 +22,15 @@ pub struct AiInsightResponse {
 
 impl From<crate::domain::ai_insight::entity::AiInsight> for AiInsightResponse {
     fn from(i: crate::domain::ai_insight::entity::AiInsight) -> Self {
-        Self { id: i.id, workspace_id: i.workspace_id, insight_type: i.insight_type.to_string(), title: i.title, content: i.content, metadata: i.metadata, created_at: i.created_at }
+        Self {
+            id: i.id,
+            workspace_id: i.workspace_id,
+            insight_type: i.insight_type.to_string(),
+            title: i.title,
+            content: i.content,
+            metadata: i.metadata,
+            created_at: i.created_at,
+        }
     }
 }
 

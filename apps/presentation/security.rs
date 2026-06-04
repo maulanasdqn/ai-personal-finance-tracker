@@ -14,7 +14,12 @@ pub fn apply_security_headers(mut resp: Response) -> Response {
         "Permissions-Policy",
         "geolocation=(), microphone=(), camera=()",
     );
-    if headers.get("Content-Security-Policy").ok().flatten().is_none() {
+    if headers
+        .get("Content-Security-Policy")
+        .ok()
+        .flatten()
+        .is_none()
+    {
         let _ = headers.set(
             "Content-Security-Policy",
             "default-src 'none'; frame-ancestors 'none'",

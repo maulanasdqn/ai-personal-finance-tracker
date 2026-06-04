@@ -2,21 +2,23 @@ use crate::error::AppError;
 
 const MAX_FILE_SIZE: usize = 10 * 1024 * 1024;
 
-static ALLOWED_CONTENT_TYPES: &[&str] = &[
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-];
+static ALLOWED_CONTENT_TYPES: &[&str] = &["image/jpeg", "image/png", "image/webp"];
 
 pub fn validate_password_strength(password: &str) -> Result<(), AppError> {
     if !password.chars().any(|c| c.is_ascii_uppercase()) {
-        return Err(AppError::BadRequest("password must contain at least one uppercase letter".into()));
+        return Err(AppError::BadRequest(
+            "password must contain at least one uppercase letter".into(),
+        ));
     }
     if !password.chars().any(|c| c.is_ascii_lowercase()) {
-        return Err(AppError::BadRequest("password must contain at least one lowercase letter".into()));
+        return Err(AppError::BadRequest(
+            "password must contain at least one lowercase letter".into(),
+        ));
     }
     if !password.chars().any(|c| c.is_ascii_digit()) {
-        return Err(AppError::BadRequest("password must contain at least one digit".into()));
+        return Err(AppError::BadRequest(
+            "password must contain at least one digit".into(),
+        ));
     }
     Ok(())
 }
@@ -45,9 +47,19 @@ pub fn sanitize_file_name(name: &str) -> String {
     let name = name.trim();
     let sanitized: String = name
         .chars()
-        .map(|c| if c.is_alphanumeric() || matches!(c, '.' | '-' | '_') { c } else { '_' })
+        .map(|c| {
+            if c.is_alphanumeric() || matches!(c, '.' | '-' | '_') {
+                c
+            } else {
+                '_'
+            }
+        })
         .collect();
-    if sanitized.is_empty() { "upload".to_string() } else { sanitized[..sanitized.len().min(200)].to_string() }
+    if sanitized.is_empty() {
+        "upload".to_string()
+    } else {
+        sanitized[..sanitized.len().min(200)].to_string()
+    }
 }
 
 #[cfg(test)]

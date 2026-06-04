@@ -148,12 +148,18 @@ mod tests {
 
     #[wasm_bindgen_test]
     fn transaction_type_from_str_income() {
-        assert_eq!(TransactionType::from_str("income").unwrap(), TransactionType::Income);
+        assert_eq!(
+            TransactionType::from_str("income").unwrap(),
+            TransactionType::Income
+        );
     }
 
     #[wasm_bindgen_test]
     fn transaction_type_from_str_expense() {
-        assert_eq!(TransactionType::from_str("expense").unwrap(), TransactionType::Expense);
+        assert_eq!(
+            TransactionType::from_str("expense").unwrap(),
+            TransactionType::Expense
+        );
     }
 
     #[wasm_bindgen_test]

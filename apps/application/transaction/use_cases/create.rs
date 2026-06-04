@@ -4,7 +4,10 @@ use crate::domain::transaction::repository::TransactionRepository;
 use crate::error::AppError;
 use uuid::Uuid;
 
-pub async fn execute(input: CreateTransactionInput, repo: &impl TransactionRepository) -> Result<Transaction, AppError> {
+pub async fn execute(
+    input: CreateTransactionInput,
+    repo: &impl TransactionRepository,
+) -> Result<Transaction, AppError> {
     let now = chrono::Utc::now().to_rfc3339();
     let tx_type = input.transaction_type;
     repo.create(NewTransaction {
@@ -20,5 +23,6 @@ pub async fn execute(input: CreateTransactionInput, repo: &impl TransactionRepos
         created_by: input.created_by,
         created_at: now.clone(),
         updated_at: now,
-    }).await
+    })
+    .await
 }

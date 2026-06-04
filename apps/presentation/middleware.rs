@@ -7,7 +7,8 @@ pub struct AuthUser {
 }
 
 pub fn extract_bearer(req: &Request) -> Result<String, AppError> {
-    let header = req.headers()
+    let header = req
+        .headers()
         .get("authorization")
         .map_err(|_| AppError::Unauthorized("missing authorization header".into()))?
         .ok_or_else(|| AppError::Unauthorized("missing authorization header".into()))?;
@@ -20,5 +21,7 @@ pub fn extract_bearer(req: &Request) -> Result<String, AppError> {
 pub fn authenticate(req: &Request, jwt_secret: &str) -> Result<AuthUser, AppError> {
     let token = extract_bearer(req)?;
     let claims = jwt::verify_token(&token, jwt_secret)?;
-    Ok(AuthUser { user_id: claims.user_id })
+    Ok(AuthUser {
+        user_id: claims.user_id,
+    })
 }
