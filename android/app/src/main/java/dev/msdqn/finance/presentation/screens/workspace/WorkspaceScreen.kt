@@ -34,7 +34,11 @@ import dev.msdqn.finance.presentation.theme.CardWhite
 import dev.msdqn.finance.presentation.theme.MintBackground
 
 @Composable
-fun WorkspaceScreen(onNavigateToCreate: () -> Unit, viewModel: WorkspaceViewModel = hiltViewModel()) {
+fun WorkspaceScreen(
+    onNavigateToCreate: () -> Unit,
+    onNavigateToDetail: (String) -> Unit = {},
+    viewModel: WorkspaceViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) { viewModel.load() }
@@ -50,7 +54,7 @@ fun WorkspaceScreen(onNavigateToCreate: () -> Unit, viewModel: WorkspaceViewMode
                 )
             }
             items(uiState.workspaces) { ws ->
-                WorkspaceCard(workspace = ws, onSelect = { viewModel.selectWorkspace(ws.id) })
+                WorkspaceCard(workspace = ws, onTap = { onNavigateToDetail(ws.id) })
             }
         }
         FloatingActionButton(
@@ -59,16 +63,16 @@ fun WorkspaceScreen(onNavigateToCreate: () -> Unit, viewModel: WorkspaceViewMode
             containerColor = ButtonPastel,
             shape = RoundedCornerShape(16.dp),
         ) {
-            Icon(Icons.Filled.Add, contentDescription = "Create workspace", tint = CardWhite)
+            Icon(Icons.Filled.Add, contentDescription = "Buat workspace", tint = CardWhite)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun WorkspaceCard(workspace: Workspace, onSelect: () -> Unit) {
+private fun WorkspaceCard(workspace: Workspace, onTap: () -> Unit) {
     Card(
-        onClick = onSelect,
+        onClick = onTap,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
         colors = CardDefaults.cardColors(containerColor = CardWhite),
         shape = RoundedCornerShape(16.dp),

@@ -73,4 +73,12 @@ class FinanceSdkSource @Inject constructor(private val sdk: FinanceSdk) {
     fun generateInsights(baseUrl: String, token: String, workspaceId: String, dateFrom: String, dateTo: String): Result<JSONObject> = runCatching {
         parse(sdk.generateInsights(baseUrl, token, workspaceId, dateFrom, dateTo))
     }
+
+    fun listStatements(baseUrl: String, token: String, workspaceId: String): Result<JSONObject> = runCatching {
+        parse(sdk.listStatements(baseUrl, token, workspaceId))
+    }
+
+    fun getStatement(baseUrl: String, token: String, workspaceId: String, id: String): Result<JSONObject> = runCatching {
+        parse(sdk.getStatement(baseUrl, token, workspaceId, id))
+    }
 }

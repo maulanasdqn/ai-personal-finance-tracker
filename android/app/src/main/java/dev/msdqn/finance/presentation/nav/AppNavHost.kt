@@ -13,26 +13,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import dev.msdqn.finance.presentation.screens.auth.LoginScreen
 import dev.msdqn.finance.presentation.screens.auth.RegisterScreen
 import dev.msdqn.finance.presentation.screens.home.HomeScreen
 import dev.msdqn.finance.presentation.screens.insights.InsightsScreen
 import dev.msdqn.finance.presentation.screens.settings.SettingsScreen
 import dev.msdqn.finance.presentation.screens.splash.SplashScreen
+import dev.msdqn.finance.presentation.screens.statements.StatementsScreen
 import dev.msdqn.finance.presentation.screens.transaction.CreateTransactionScreen
 import dev.msdqn.finance.presentation.screens.transaction.TransactionScreen
 import dev.msdqn.finance.presentation.screens.workspace.CreateWorkspaceScreen
+import dev.msdqn.finance.presentation.screens.workspace.WorkspaceDetailScreen
 import dev.msdqn.finance.presentation.screens.workspace.WorkspaceScreen
 import dev.msdqn.finance.presentation.ui.BottomNavBar
 
 private val bottomNavRoutes = setOf(
     Routes.HOME,
     Routes.TRANSACTIONS,
-    Routes.WORKSPACES,
+    Routes.STATEMENTS,
     Routes.INSIGHTS,
     Routes.SETTINGS,
 )
@@ -78,18 +82,30 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 composable(Routes.TRANSACTIONS) {
                     TransactionScreen(
                         onNavigateToCreate = { navController.navigate(Routes.CREATE_TRANSACTION) },
+                        onBack = { navController.popBackStack() },
                     )
                 }
                 composable(Routes.CREATE_TRANSACTION) {
                     CreateTransactionScreen(onBack = { navController.popBackStack() })
                 }
+                composable(Routes.STATEMENTS) {
+                    StatementsScreen()
+                }
                 composable(Routes.WORKSPACES) {
                     WorkspaceScreen(
                         onNavigateToCreate = { navController.navigate(Routes.CREATE_WORKSPACE) },
+                        onNavigateToDetail = { id -> navController.navigate(Routes.workspaceDetail(id)) },
                     )
                 }
                 composable(Routes.CREATE_WORKSPACE) {
                     CreateWorkspaceScreen(onBack = { navController.popBackStack() })
+                }
+                composable(
+                    route = Routes.WORKSPACE_DETAIL,
+                    arguments = listOf(navArgument("workspaceId") { type = NavType.StringType }),
+                ) { backStackEntry ->
+                    val workspaceId = backStackEntry.arguments?.getString("workspaceId") ?: ""
+                    WorkspaceDetailScreen(workspaceId = workspaceId, onBack = { navController.popBackStack() })
                 }
                 composable(Routes.INSIGHTS) {
                     InsightsScreen()
@@ -97,6 +113,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 composable(Routes.SETTINGS) {
                     SettingsScreen(
                         onNavigateToLogin = { navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } } },
+                        onNavigateToWorkspaces = { navController.navigate(Routes.WORKSPACES) },
                     )
                 }
             }

@@ -16,6 +16,7 @@ import javax.inject.Inject
 data class CreateTransactionState(
     val cents: Long = 0L,
     val category: String = "",
+    val description: String = "",
     val date: String = LocalDate.now().toString(),
     val type: String = "expense",
     val currency: String = "IDR",
@@ -23,6 +24,9 @@ data class CreateTransactionState(
     val success: Boolean = false,
     val error: String? = null,
 )
+
+val EXPENSE_CATEGORIES = listOf("Makanan", "Transport", "Belanja", "Tagihan", "Hiburan", "Kesehatan", "Pendidikan", "Lainnya")
+val INCOME_CATEGORIES = listOf("Gaji", "Bonus", "Freelance", "Investasi", "Bisnis", "Lainnya")
 
 @HiltViewModel
 class CreateTransactionViewModel @Inject constructor(
@@ -40,26 +44,24 @@ class CreateTransactionViewModel @Inject constructor(
         }
     }
 
-    fun backspace() {
-        _state.update { it.copy(cents = it.cents / 10) }
-    }
-
+    fun backspace() = _state.update { it.copy(cents = it.cents / 10) }
     fun setCategory(v: String) = _state.update { it.copy(category = v) }
+    fun setDescription(v: String) = _state.update { it.copy(description = v) }
     fun setDate(v: String) = _state.update { it.copy(date = v) }
-    fun setType(v: String) = _state.update { it.copy(type = v) }
+    fun setType(v: String) = _state.update { it.copy(type = v, category = "") }
 
     fun create() {
         val s = _state.value
         if (s.cents == 0L || s.category.isBlank()) {
-            _state.update { it.copy(error = "Enter amount and category") }
+            _state.update { it.copy(error = "Masukkan jumlah dan kategori") }
             return
         }
-        val amount = s.cents.toDouble()
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             val token = session.token.first() ?: return@launch
             val workspaceId = session.workspaceId.first().takeIf { !it.isNullOrBlank() } ?: return@launch
-            txRepo.createTransaction(token, workspaceId, amount, s.currency, s.category, null, s.date, s.type)
+            val desc = s.description.takeIf { it.isNotBlank() }
+            txRepo.createTransaction(token, workspaceId, s.cents.toDouble(), s.currency, s.category, desc, s.date, s.type)
                 .onSuccess { _state.update { it.copy(success = true, isLoading = false) } }
                 .onFailure { err -> _state.update { it.copy(error = err.message, isLoading = false) } }
         }

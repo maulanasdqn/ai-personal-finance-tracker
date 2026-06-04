@@ -9,6 +9,7 @@ import dev.msdqn.finance.domain.repo.InsightRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -29,12 +30,23 @@ class InsightsViewModel @Inject constructor(
 
     fun load() {
         viewModelScope.launch {
-            _uiState.value = InsightsUiState(isLoading = true)
+            _uiState.update { it.copy(isLoading = true, error = null) }
             val token = session.token.first() ?: return@launch
             val workspaceId = session.workspaceId.first() ?: return@launch
             insightRepo.listInsights(token, workspaceId)
-                .onSuccess { _uiState.value = InsightsUiState(insights = it) }
-                .onFailure { _uiState.value = InsightsUiState(error = it.message) }
+                .onSuccess { insights -> _uiState.update { it.copy(insights = insights, isLoading = false) } }
+                .onFailure { e -> _uiState.update { it.copy(error = e.message, isLoading = false) } }
+        }
+    }
+
+    fun generate(dateFrom: String, dateTo: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            val token = session.token.first() ?: return@launch
+            val workspaceId = session.workspaceId.first() ?: return@launch
+            insightRepo.generateInsights(token, workspaceId, dateFrom, dateTo)
+                .onSuccess { insights -> _uiState.update { it.copy(insights = it.insights + insights, isLoading = false) } }
+                .onFailure { e -> _uiState.update { it.copy(error = e.message, isLoading = false) } }
         }
     }
 }

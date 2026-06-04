@@ -18,6 +18,8 @@ data class HomeUiState(
     val isLoading: Boolean = false,
     val recentTransactions: List<Transaction> = emptyList(),
     val totalBalance: Double = 0.0,
+    val totalIncome: Double = 0.0,
+    val totalExpense: Double = 0.0,
     val todayChange: Double = 0.0,
     val currency: String = "IDR",
     val error: String? = null,
@@ -51,6 +53,8 @@ class HomeViewModel @Inject constructor(
                     _uiState.value = HomeUiState(
                         recentTransactions = txs.take(5),
                         totalBalance = balance,
+                        totalIncome = income,
+                        totalExpense = expense,
                         todayChange = todayIncome - todayExpense,
                         currency = currency,
                     )

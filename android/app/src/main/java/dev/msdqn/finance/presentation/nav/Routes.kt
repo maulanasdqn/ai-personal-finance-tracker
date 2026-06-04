@@ -10,8 +10,10 @@ object Routes {
     const val TRANSACTION_DETAIL = "transaction_detail/{id}"
     const val WORKSPACES = "workspaces"
     const val CREATE_WORKSPACE = "create_workspace"
-    const val WORKSPACE_DETAIL = "workspace_detail/{id}"
+    const val WORKSPACE_DETAIL = "workspace_detail/{workspaceId}"
     const val INSIGHTS = "insights"
     const val STATEMENTS = "statements"
     const val SETTINGS = "settings"
+
+    fun workspaceDetail(workspaceId: String) = "workspace_detail/$workspaceId"
 }
