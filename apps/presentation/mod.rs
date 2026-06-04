@@ -1,5 +1,9 @@
 pub mod ai_insight;
+pub mod auth;
 pub mod bank_statement;
+pub mod docs;
+pub mod guard;
+pub mod middleware;
+pub mod security;
 pub mod transaction;
-pub mod user;
 pub mod workspace;

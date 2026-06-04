@@ -2,8 +2,8 @@ use crate::application::ai_insight::use_cases::{dto::GenerateInsightsInput, gene
 use crate::domain::ai_insight::repository::AiInsightRepository;
 use crate::domain::workspace::repository::WorkspaceRepository;
 use crate::error::AppError;
-use crate::infrastructure::repository::{ai_insight::D1AiInsightRepository, transaction::D1TransactionRepository, workspace::D1WorkspaceRepository};
-use crate::{ai_insight::dto::*, guard, middleware::authenticate};
+use crate::infrastructure::{ai_insight::D1AiInsightRepository, transaction::D1TransactionRepository, workspace::D1WorkspaceRepository};
+use crate::presentation::{ai_insight::dto::*, guard, middleware::authenticate};
 use worker::{Request, Response, RouteContext};
 
 const AI_COOLDOWN_SECS: i64 = 300;

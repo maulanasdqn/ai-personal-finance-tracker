@@ -1,26 +1,20 @@
 use worker::{event, Context, Env, Method, Request, Response, Router};
 
-mod ai_insight;
 mod application;
-mod auth;
-mod bank_statement;
-mod docs;
 mod domain;
 mod error;
-mod guard;
 mod infrastructure;
-mod middleware;
-mod security;
-mod transaction;
-mod workspace;
+mod presentation;
 
-use ai_insight::routes as insight_routes;
-use auth::routes as auth_routes;
-use bank_statement::routes as stmt_routes;
-use docs::routes as docs_routes;
-use security::apply_security_headers;
-use transaction::routes as tx_routes;
-use workspace::routes as ws_routes;
+use presentation::{
+    ai_insight::routes as insight_routes,
+    auth::routes as auth_routes,
+    bank_statement::routes as stmt_routes,
+    docs::routes as docs_routes,
+    security::apply_security_headers,
+    transaction::routes as tx_routes,
+    workspace::routes as ws_routes,
+};
 
 fn cors_preflight() -> worker::Result<Response> {
     let mut resp = Response::empty()?;
